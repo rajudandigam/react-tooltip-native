@@ -1,8 +1,17 @@
-- Use TypeScript with strict mode. No implicit any; prefer explicit types for public API.
-- Do not add runtime dependencies unless explicitly required. Dev dependencies are allowed.
-- All library code lives under src/. Core (framework-agnostic) in src/core/; React-specific in src/react/.
-- Never access window, document, or navigator at module top-level (SSR-safe). Check at call time inside functions.
-- Public API must return structured results (e.g. { success, method, code?, error? }). No UI assumptions (no toasts, dialogs).
-- Tests: Vitest for unit (jsdom), Playwright for E2E using demo app. Do not rely on clipboard or OS-specific APIs in E2E assertions.
-- Single source of truth: docs/DEV-ARCHITECTURE.md. For architecture decisions and layout, read that first.
-- Packaging: ESM + CJS via tsup; exports map with types, import, require. Publish dist only.
+# react-tooltip-native — Cursor rules
+
+- **TypeScript**: Strict mode. No implicit any; prefer explicit types for public API. See docs/API_SPECS.md for the authoritative public API.
+- **No runtime dependencies**: Dev dependencies only unless explicitly required.
+- **Layout**: All library code under src/. Modules: src/core/, src/strategy/, src/positioning/, src/hooks/, src/components/. See docs/DEV-ARCHITECTURE.md for exact structure.
+- **SSR-safe**: Never access window, document, or navigator at module top-level; check at call time inside functions.
+- **Native path**: No portals in native path. Top Layer handles rendering. Use Popover API and CSS Anchor Positioning when supported.
+- **Fallback path**: No Floating UI. No heavy collision engine. Fallback must use ResizeObserver (trigger + overlay) and scroll listeners on nearest scroll parents only. No global window scroll only, no polling loops, no continuous rAF loops.
+- **Behavior parity**: Fallback must match native for auto light-dismiss, manual persistence, Esc, and openChange reason values.
+- **Flicker mitigation**: On native show, inject anchor + placement styles then rAF then showPopover() (or visibility gating). No visible (0,0) flash.
+- **Bundle**: Keep bundle ≤ 4KB gzip. No external positioning libs, no animation lib, no polyfills bundled. Run npm run size after build.
+- **MVP scope**: No feature drift beyond MVP. Non-goals: focus trap, Shadow DOM, follow-cursor, animation framework, full dropdown/menu semantics. See docs/PRD.md.
+- **Tests**: Write tests for each module. Vitest (jsdom) for unit; Playwright for E2E using demo app. Do not rely on clipboard or OS-specific APIs in E2E assertions.
+- **Definition of done**: Run npm run test:all before marking work done (typecheck, unit, build, size, test:pw).
+- **Stepwise workflow**: Change one area at a time (e.g. one module or one doc). Stop for commit before moving to the next area. Do not batch unrelated changes.
+- **Single source of truth**: docs/DEV-ARCHITECTURE.md for repo layout and implementation order. docs/PRD.md, docs/ARCHITECTURE.md, docs/API_SPECS.md for product and API.
+- **Packaging**: ESM + CJS via tsup; exports map with types, import, require. Publish dist only.

@@ -1,9 +1,11 @@
 ---
-description: react-tooltip-native — native-first tooltip/popover, tiered engine, React hook/component/actions, ESM+CJS, Vitest + Playwright, changesets, OIDC-ready release.
+description: react-tooltip-native — native-first tooltip/popover, Popover API + CSS Anchor, ResizeObserver fallback, strict behavior parity, ≤4KB gzip, stepwise workflow.
 globs: 
 alwaysApply: true
 ---
 
-This repo is **react-tooltip-native**: native-first tooltip and popover for React (Popover API + CSS Anchor Positioning, minimal JS fallback). Zero runtime deps, strict types, tiered core engine, React layer (hook, component, action), unit + E2E tests, size gate, and changesets with npm Trusted Publishing.
+This repo is **react-tooltip-native**: native-first tooltip and popover for React (Popover API + CSS Anchor Positioning, minimal JS fallback with ResizeObserver + scroll parents). No portals in native path; no Floating UI; bundle ≤ 4KB gzip; no feature drift beyond MVP.
 
-**Single source of truth:** [docs/DEV-ARCHITECTURE.md](../../docs/DEV-ARCHITECTURE.md). Library-specific: [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md), [docs/PRD.md](../../docs/PRD.md), [docs/API_SPECS.md](../../docs/API_SPECS.md). Read these for goals, API contract, engine tiers, repo layout, testing, packaging, and release flow. Follow the implementation order when adding features.
+**Rules:** Write tests for each module. Run `npm run test:all` before marking done. Change one area at a time and stop for commit.
+
+**Single source of truth:** [docs/DEV-ARCHITECTURE.md](../../docs/DEV-ARCHITECTURE.md) — goals, strategy resolution, module structure (core, strategy, positioning, hooks, components), native/fallback adapters, flicker mitigation, behavior parity, performance model, test matrix, packaging. Library-specific: [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md), [docs/PRD.md](../../docs/PRD.md), [docs/API_SPECS.md](../../docs/API_SPECS.md). Read these before implementing or reviewing. Follow the implementation order when adding features.
