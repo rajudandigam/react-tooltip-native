@@ -1,87 +1,53 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { useEngine, RunEngine, runEngine } from "@lib/react";
+import { Tooltip, Popover, useTooltip } from "@lib/react";
 import "./styles.css";
 
 function HookDemo() {
-  const { run, running, lastResult, reset } = useEngine();
-  const [input, setInput] = React.useState("hello");
+  const { open, setOpen, getTriggerProps, getTooltipProps, supports } = useTooltip({
+    placement: "right",
+  });
 
   return (
     <section aria-labelledby="hook-title">
-      <h2 id="hook-title">useEngine hook</h2>
-      <input
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        aria-label="Input for engine"
-      />
-      <button
-        type="button"
-        onClick={() => run(input)}
-        disabled={running}
-        aria-busy={running}
-      >
-        {running ? "Running…" : "Run"}
+      <h2 id="hook-title">useTooltip hook</h2>
+      <button type="button" {...getTriggerProps()}>
+        Hover me
       </button>
-      <button type="button" onClick={reset}>
-        Reset
-      </button>
-      {lastResult && (
-        <p data-result role="status" aria-live="polite">
-          {lastResult.success
-            ? `Success (${lastResult.method})`
-            : `Failed: ${lastResult.method}${lastResult.code ? ` — ${lastResult.code}` : ""}`}
-        </p>
+      {open && (
+        <div {...getTooltipProps()}>
+          Tooltip content (popover: {String(supports.popover)}, anchor: {String(supports.anchorPositioning)})
+        </div>
       )}
+      <button type="button" onClick={() => setOpen(!open)}>
+        Toggle
+      </button>
     </section>
   );
 }
 
 function ComponentDemo() {
-  const [status, setStatus] = React.useState<string | null>(null);
-
   return (
     <section aria-labelledby="component-title">
-      <h2 id="component-title">RunEngine component</h2>
-      <RunEngine
-        input="click me"
-        onResult={(r) => setStatus(r.success ? `ok: ${r.method}` : `err: ${r.method}`)}
-      >
+      <h2 id="component-title">Tooltip component</h2>
+      <Tooltip content="Copy to clipboard">
         <button type="button" data-component-trigger>
-          Run via component
+          📋
         </button>
-      </RunEngine>
-      {status && (
-        <p data-component-result role="status" aria-live="polite">
-          {status}
-        </p>
-      )}
+      </Tooltip>
     </section>
   );
 }
 
-function ImperativeDemo() {
-  const [msg, setMsg] = React.useState<string | null>(null);
-
+function PopoverDemo() {
   return (
-    <section aria-labelledby="imperative-title">
-      <h2 id="imperative-title">Imperative runEngine</h2>
-      <button
-        type="button"
-        data-imperative-trigger
-        onClick={async () => {
-          const r = await runEngine("direct");
-          setMsg(r.success ? `Success: ${r.method}` : `Failed: ${r.method}`);
-        }}
-      >
-        Run imperative
-      </button>
-      {msg && (
-        <p data-imperative-result role="status" aria-live="polite">
-          {msg}
-        </p>
-      )}
+    <section aria-labelledby="popover-title">
+      <h2 id="popover-title">Popover component</h2>
+      <Popover content={<div>Profile menu placeholder</div>}>
+        <button type="button" data-popover-trigger>
+          Open popover
+        </button>
+      </Popover>
     </section>
   );
 }
@@ -92,7 +58,7 @@ function App() {
       <h1>react-tooltip-native demo</h1>
       <HookDemo />
       <ComponentDemo />
-      <ImperativeDemo />
+      <PopoverDemo />
     </main>
   );
 }
