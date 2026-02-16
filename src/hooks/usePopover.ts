@@ -6,7 +6,7 @@
 import type { RefCallback } from "react";
 import { useCallback, useId, useState } from "react";
 import type { UsePopoverOptions, UsePopoverReturn } from "../types";
-import { getFeatureSupport } from "../strategy/featureDetection";
+import { detectSupports } from "../strategy/featureDetection";
 
 export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
   const {
@@ -22,7 +22,7 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
   const generatedId = useId();
   const id = idProp ?? (generatedId.replace(/:/g, "") || "rt-popover");
   const [open, setOpenState] = useState(false);
-  const supports = getFeatureSupport();
+  const supports = detectSupports();
 
   const setOpen = useCallback((next: boolean, _reason?: import("../types").OpenChangeReason) => {
     setOpenState(next);

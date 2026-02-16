@@ -6,7 +6,7 @@
 import type { RefCallback } from "react";
 import { useCallback, useId, useState } from "react";
 import type { UseTooltipOptions, UseTooltipReturn } from "../types";
-import { getFeatureSupport } from "../strategy/featureDetection";
+import { detectSupports } from "../strategy/featureDetection";
 
 export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
   const {
@@ -24,7 +24,7 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
   const generatedId = useId();
   const id = idProp ?? (generatedId.replace(/:/g, "") || "rt-tooltip");
   const [open, setOpenState] = useState(false);
-  const supports = getFeatureSupport();
+  const supports = detectSupports();
 
   const setOpen = useCallback((next: boolean, _reason?: import("../types").OpenChangeReason) => {
     setOpenState(next);
