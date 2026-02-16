@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Demo app smoke", () => {
   test("loads and shows demo title", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Template library demo" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "react-tooltip-native demo" })).toBeVisible();
   });
 
   test("hook: run updates status (UI only)", async ({ page }) => {

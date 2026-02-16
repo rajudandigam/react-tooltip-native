@@ -1,9 +1,9 @@
 ---
-description: OSS npm library template — tiered engine, React hook/component/actions, ESM+CJS, Vitest + Playwright, changesets, OIDC-ready release.
+description: react-tooltip-native — native-first tooltip/popover, tiered engine, React hook/component/actions, ESM+CJS, Vitest + Playwright, changesets, OIDC-ready release.
 globs: 
 alwaysApply: true
 ---
 
-This repo is a **template** for building modern TypeScript npm libraries with zero runtime deps, strict types, tiered core engine, React layer (hook, component, action), unit + E2E tests, size gate, and changesets with npm Trusted Publishing.
+This repo is **react-tooltip-native**: native-first tooltip and popover for React (Popover API + CSS Anchor Positioning, minimal JS fallback). Zero runtime deps, strict types, tiered core engine, React layer (hook, component, action), unit + E2E tests, size gate, and changesets with npm Trusted Publishing.
 
-**Single source of truth:** [docs/DEV-ARCHITECTURE.md](../../docs/DEV-ARCHITECTURE.md) — read it for goals, API contract, engine tiers, repo layout, testing, packaging, and release flow. Follow the implementation order when adding features.
+**Single source of truth:** [docs/DEV-ARCHITECTURE.md](../../docs/DEV-ARCHITECTURE.md). Library-specific: [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md), [docs/PRD.md](../../docs/PRD.md), [docs/API_SPECS.md](../../docs/API_SPECS.md). Read these for goals, API contract, engine tiers, repo layout, testing, packaging, and release flow. Follow the implementation order when adding features.

@@ -1,7 +1,7 @@
 {
-  "name": "oss-npm-lib-template",
+  "name": "react-tooltip-native",
   "version": "0.0.0",
-  "description": "Template repo for building modern TypeScript npm libraries with CI, tests, size gate, demo, and release automation.",
+  "description": "Native-first tooltip and popover for React using Popover API and CSS Anchor Positioning with a minimal JS fallback.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -28,12 +28,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_GITHUB_USERNAME/oss-npm-lib-template.git"
+    "url": "https://github.com/rajudandigam/react-tooltip-native.git"
   },
   "bugs": {
-    "url": "https://github.com/YOUR_GITHUB_USERNAME/oss-npm-lib-template/issues"
+    "url": "https://github.com/rajudandigam/react-tooltip-native/issues"
   },
-  "homepage": "https://github.com/YOUR_GITHUB_USERNAME/oss-npm-lib-template#readme",
+  "homepage": "https://github.com/rajudandigam/react-tooltip-native#readme",
   "publishConfig": {
     "access": "public"
   },

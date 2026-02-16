@@ -5,9 +5,9 @@ Use this checklist when turning this template into your own npm library. Do ever
 ## 1. Package identity
 
 - [ ] **package.json**
-  - `name`: change `oss-npm-lib-template` → your package name (e.g. `my-cool-lib`).
+  - `name`: set to your package name (e.g. `react-tooltip-native`).
   - `description`: set to your library’s description.
-  - `repository.url`: replace `YOUR_GITHUB_USERNAME/oss-npm-lib-template` with your org/repo.
+  - `repository.url`: replace with your org/repo (e.g. `https://github.com/rajudandigam/react-tooltip-native.git`).
   - `bugs.url`: same repo, `/issues`.
   - `homepage`: same repo, `#readme`.
 

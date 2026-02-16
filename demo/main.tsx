@@ -89,7 +89,7 @@ function ImperativeDemo() {
 function App() {
   return (
     <main>
-      <h1>Template library demo</h1>
+      <h1>react-tooltip-native demo</h1>
       <HookDemo />
       <ComponentDemo />
       <ImperativeDemo />

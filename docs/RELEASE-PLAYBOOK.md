@@ -14,7 +14,7 @@ The publish workflow uses **Trusted Publishing** so you do not need to store `NP
    - Go to **Package settings** → **Publishing access** → **Configure Trusted Publishers**.
    - Add a **GitHub** trusted publisher:
      - **Repository owner**: your GitHub org or username.
-     - **Repository name**: e.g. `oss-npm-lib-template` (or your repo).
+     - **Repository name**: e.g. `react-tooltip-native` (or your repo).
      - **Workflow name**: `release.yml` (must match the filename under `.github/workflows/`).
      - **Environment (optional)**: leave blank unless you use environments.
 
