@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    setupFiles: ["./vitest.setup.ts"],
     clearMocks: true,
     restoreMocks: true,
     exclude: ["**/node_modules/**", "**/dist/**", "playwright/**", "demo/**"],
