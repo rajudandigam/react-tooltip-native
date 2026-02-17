@@ -48,13 +48,3 @@ export function withPositionAnchorStyle<T extends { style?: CSSProperties }>(
     : {};
   return { ...props, style: { ...existing, positionAnchor } };
 }
-
-/** @deprecated Use makeAnchorName + withAnchorNameStyle. Returns style object for trigger. */
-export function getTriggerAnchorStyle(id: string): { anchorName: string } {
-  return { anchorName: makeAnchorName(id) };
-}
-
-/** @deprecated Use makeAnchorName + withPositionAnchorStyle. Returns style object for overlay. */
-export function getOverlayAnchorStyle(id: string): { positionAnchor: string } {
-  return { positionAnchor: makeAnchorName(id) };
-}

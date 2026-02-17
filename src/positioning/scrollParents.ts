@@ -14,9 +14,14 @@ const SCROLLABLE_OVERFLOW = new Set<string>(["auto", "scroll", "overlay"]);
 
 function isScrollable(el: Element): boolean {
   if (typeof getComputedStyle === "undefined") return false;
+
   const style = getComputedStyle(el);
-  const overflow = style.overflow || style.overflowX || style.overflowY;
-  return SCROLLABLE_OVERFLOW.has(overflow);
+
+  return (
+    SCROLLABLE_OVERFLOW.has(style.overflow) ||
+    SCROLLABLE_OVERFLOW.has(style.overflowX) ||
+    SCROLLABLE_OVERFLOW.has(style.overflowY)
+  );
 }
 
 /**
@@ -36,7 +41,7 @@ export function getScrollParents(
   let current: Element | null = el.parentElement;
 
   while (current != null && current !== boundary) {
-    if (current === document.documentElement) break;
+    if (typeof document !== "undefined" && current === document.documentElement) break;
     if (isScrollable(current)) {
       if (!result.includes(current)) result.push(current);
     }

@@ -100,10 +100,12 @@ export function createInteractionManager(input: {
       },
       // Immediate open on focus for accessibility (WCAG 1.4.13); no delay.
       onFocusTrigger() {
+        clearOpenTimer();
         clearCloseTimer();
         onRequest({ type: "OPEN_REQUEST", reason: "focus" });
       },
       onBlurTrigger() {
+        clearOpenTimer();
         scheduleClose("blur");
       },
       onClickTrigger: noop,
@@ -126,6 +128,8 @@ export function createInteractionManager(input: {
     onFocusTrigger: noop,
     onBlurTrigger: noop,
     onClickTrigger() {
+      clearOpenTimer();
+      clearCloseTimer();
       onRequest({ type: "TOGGLE_REQUEST", reason: "click" });
     },
     onKeyDownEscape() {

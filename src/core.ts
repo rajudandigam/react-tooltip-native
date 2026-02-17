@@ -14,4 +14,3 @@ export { detectSupports } from "./strategy/featureDetection";
 export type { Supports } from "./strategy/featureDetection";
 export { resolveStrategy } from "./strategy/resolveStrategy";
 export type { ResolvedStrategy } from "./strategy/resolveStrategy";
-export { getTriggerAnchorStyle, getOverlayAnchorStyle } from "./positioning/anchorInjection";
