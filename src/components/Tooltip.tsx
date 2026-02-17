@@ -48,7 +48,7 @@ export function Tooltip({
     describeOnlyWhenOpen,
   });
 
-  const child = React.Children.only(children) as React.ReactElement<{ ref?: React.Ref<HTMLElement> }>;
+  const child = React.Children.only(children) as React.ReactElement & { ref?: React.Ref<HTMLElement> };
   const triggerProps = getTriggerProps({ ref: child.ref });
 
   const tooltipProps = getTooltipProps({

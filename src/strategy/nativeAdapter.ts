@@ -102,7 +102,7 @@ export function createNativeAdapter(options: NativeAdapterOptions): NativeAdapte
     (triggerEl.style as unknown as TriggerStyle).anchorName = anchorName;
     (overlayEl.style as unknown as PopoverStyle).positionAnchor = anchorName;
     hasSetAnchorStyles = true;
-    setPositionArea(overlayEl, currentPlacement);
+    setPositionArea(overlayEl, PLACEMENT_TO_POSITION_AREA[currentPlacement]);
     overlayEl.style.visibility = "hidden";
 
     openRafId = requestAnimationFrame(() => {
@@ -135,7 +135,7 @@ export function createNativeAdapter(options: NativeAdapterOptions): NativeAdapte
 
   function updatePlacement(next: Placement): void {
     currentPlacement = next;
-    setPositionArea(overlayEl, next);
+    setPositionArea(overlayEl, PLACEMENT_TO_POSITION_AREA[next]);
   }
 
   function destroy(): void {
