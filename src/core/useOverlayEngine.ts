@@ -46,6 +46,9 @@ export type UseOverlayEngineReturn = {
   triggerRef: (node: HTMLElement | null) => void;
   overlayRef: (node: HTMLElement | null) => void;
 
+  /** Internal: used by useTooltip/usePopover to wire pointer/focus/click/keydown. Returns null until trigger ref is set. */
+  getInteractionHandlers: () => InteractionHandlers | null;
+
   supports: {
     popover: boolean;
     anchorPositioning: boolean;
@@ -284,11 +287,16 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
     setOverlayEl(node);
   }, []);
 
+  const getInteractionHandlers = useCallback((): InteractionHandlers | null => {
+    return interactionRef.current;
+  }, []);
+
   return {
     open: derivedOpen,
     setOpen,
     triggerRef,
     overlayRef,
+    getInteractionHandlers,
     supports,
   };
 }

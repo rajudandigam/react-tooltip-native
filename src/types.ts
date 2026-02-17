@@ -99,6 +99,12 @@ export interface UseTooltipOptions {
   strategy?: Strategy;
   disableAnchorPositioning?: boolean;
   id?: string;
+  /** Controlled: when set, open state is driven by this prop */
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean, reason: OpenChangeReason) => void;
+  /** When true (default), aria-describedby is only set when open */
+  describeOnlyWhenOpen?: boolean;
 }
 
 export interface UseTooltipReturn {
@@ -123,6 +129,8 @@ export interface UseTooltipReturn {
     role: "tooltip";
     id: string;
     style?: React.CSSProperties;
+    onPointerEnter?: React.PointerEventHandler<HTMLElement>;
+    onPointerLeave?: React.PointerEventHandler<HTMLElement>;
   };
   supports: {
     popover: boolean;
@@ -138,6 +146,11 @@ export interface UsePopoverOptions {
   disableAnchorPositioning?: boolean;
   restoreFocusOnClose?: boolean;
   id?: string;
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean, reason: OpenChangeReason) => void;
+  closeOnEsc?: boolean;
+  closeOnOutsidePress?: boolean;
 }
 
 export interface UsePopoverReturn {

@@ -1,84 +1,148 @@
 /**
- * usePopover: headless popover hook per API_SPECS.md.
- * TODO: Wire to useOverlayEngine, strategy resolution, getTriggerProps/getPopoverProps.
+ * usePopover: headless popover hook. Delegates state and lifecycle to useOverlayEngine;
+ * provides getTriggerProps/getPopoverProps with anchor injection and interaction wiring.
  */
 
-import type { RefCallback } from "react";
-import { useCallback, useId, useState } from "react";
+import type React from "react";
+import { useCallback, useId } from "react";
 import type { UsePopoverOptions, UsePopoverReturn } from "../types";
-import { detectSupports } from "../strategy/featureDetection";
+import { useOverlayEngine } from "../core/useOverlayEngine";
+import { makeAnchorName, withAnchorNameStyle, withPositionAnchorStyle } from "../positioning/anchorInjection";
+import { composeRefs } from "./_utils";
 
 export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
   const {
-    mode: _mode = "auto",
-    placement: _placement = "bottom",
-    offset: _offset = 8,
-    strategy: _strategy = "auto",
-    disableAnchorPositioning: _disableAnchorPositioning,
-    restoreFocusOnClose: _restoreFocusOnClose = true,
+    mode = "auto",
+    placement = "bottom",
+    offset = 8,
+    strategy = "auto",
+    disableAnchorPositioning,
+    restoreFocusOnClose = true,
     id: idProp,
+    open: controlledOpen,
+    defaultOpen,
+    onOpenChange,
+    closeOnEsc = true,
+    closeOnOutsidePress: closeOnOutsidePressProp,
   } = options;
 
   const generatedId = useId();
-  const id = idProp ?? (generatedId.replace(/:/g, "") || "rt-popover");
-  const [open, setOpenState] = useState(false);
-  const supports = detectSupports();
+  const id = idProp ?? (generatedId.replace(/:/g, "-") || "rt-popover");
+  const anchorName = makeAnchorName(id);
 
-  const setOpen = useCallback((next: boolean, _reason?: import("../types").OpenChangeReason) => {
-    setOpenState(next);
-  }, []);
+  const closeOnOutsidePress =
+    closeOnOutsidePressProp ?? mode === "auto";
 
-  const toggle = useCallback((_reason?: import("../types").OpenChangeReason) => {
-    setOpenState((prev) => !prev);
-  }, []);
+  const engine = useOverlayEngine({
+    kind: "popover",
+    mode,
+    placement,
+    offset,
+    strategy,
+    disableAnchorPositioning,
+    controlledOpen,
+    defaultOpen: defaultOpen ?? false,
+    onOpenChange,
+    interactionConfig: {
+      openDelayMs: 0,
+      closeDelayMs: 0,
+      hoverableContent: false,
+      dismissOnEsc: closeOnEsc,
+    },
+    closeOnOutsidePress,
+    closeOnEsc,
+    restoreFocusOnClose,
+  });
+
+  const handlers = engine.getInteractionHandlers();
+  const { open } = engine;
+
+  const toggle = useCallback(
+    (reason?: import("../types").OpenChangeReason) => {
+      engine.setOpen(!open, reason ?? "click");
+    },
+    [engine, open]
+  );
 
   const getTriggerProps = useCallback(
     <T extends object>(
       props?: T
     ): T & {
-      ref: RefCallback<HTMLElement>;
+      ref: React.RefCallback<HTMLElement>;
       "aria-expanded"?: boolean;
       "aria-controls"?: string;
       style?: React.CSSProperties;
       onClick?: React.MouseEventHandler<HTMLElement>;
       onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
     } => {
-      // TODO: Inject anchorName style; wire click/keydown to interactionManager.
+      const base = (props ?? {}) as T & {
+        ref?: React.RefCallback<HTMLElement> | React.RefObject<HTMLElement>;
+        style?: React.CSSProperties;
+        onClick?: React.MouseEventHandler<HTMLElement>;
+        onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
+      };
+      const withAnchor = withAnchorNameStyle(base, anchorName);
       return {
-        ...(props ?? ({} as T)),
-        ref: () => {},
+        ...withAnchor,
+        ref: composeRefs<HTMLElement>(engine.triggerRef, base.ref),
         "aria-expanded": open,
-        "aria-controls": open ? id : undefined,
-        onClick: () => setOpenState((prev) => !prev),
+        "aria-controls": id,
+        onClick: (e) => {
+          base.onClick?.(e);
+          handlers?.onClickTrigger();
+        },
+        onKeyDown: (e) => {
+          base.onKeyDown?.(e);
+          if (e.key === "Escape") handlers?.onKeyDownEscape();
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handlers?.onClickTrigger();
+          }
+        },
+      } as T & {
+        ref: React.RefCallback<HTMLElement>;
+        "aria-expanded"?: boolean;
+        "aria-controls"?: string;
+        style?: React.CSSProperties;
+        onClick?: React.MouseEventHandler<HTMLElement>;
+        onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
       };
     },
-    [open, id]
+    [engine, anchorName, id, open, handlers]
   );
 
   const getPopoverProps = useCallback(
     <T extends object>(
       props?: T
     ): T & {
-      ref: RefCallback<HTMLElement>;
+      ref: React.RefCallback<HTMLElement>;
       id: string;
       style?: React.CSSProperties;
     } => {
-      // TODO: Inject positionAnchor style.
+      const base = (props ?? {}) as T & {
+        ref?: React.RefCallback<HTMLElement> | React.RefObject<HTMLElement>;
+        style?: React.CSSProperties;
+      };
+      const withAnchor = withPositionAnchorStyle(base, anchorName);
       return {
-        ...(props ?? ({} as T)),
-        ref: () => {},
+        ...withAnchor,
+        ref: composeRefs<HTMLElement>(engine.overlayRef, base.ref),
         id,
+      } as T & {
+        ref: React.RefCallback<HTMLElement>;
+        id: string;
+        style?: React.CSSProperties;
       };
     },
-    [id]
+    [engine, anchorName, id]
   );
 
   return {
     open,
-    setOpen,
+    setOpen: engine.setOpen,
     toggle,
     getTriggerProps,
     getPopoverProps,
-    supports,
+    supports: engine.supports,
   };
 }

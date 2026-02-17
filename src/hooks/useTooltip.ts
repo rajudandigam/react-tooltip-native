@@ -1,40 +1,64 @@
 /**
- * useTooltip: headless tooltip hook per API_SPECS.md.
- * TODO: Wire to useOverlayEngine, strategy resolution, getTriggerProps/getTooltipProps.
+ * useTooltip: headless tooltip hook. Delegates state and lifecycle to useOverlayEngine;
+ * provides getTriggerProps/getTooltipProps with anchor injection and interaction wiring.
  */
 
-import type { RefCallback } from "react";
-import { useCallback, useId, useState } from "react";
+import type React from "react";
+import { useCallback, useId } from "react";
 import type { UseTooltipOptions, UseTooltipReturn } from "../types";
-import { detectSupports } from "../strategy/featureDetection";
+import { useOverlayEngine } from "../core/useOverlayEngine";
+import { makeAnchorName, withAnchorNameStyle, withPositionAnchorStyle } from "../positioning/anchorInjection";
+import { composeRefs } from "./_utils";
 
 export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
   const {
-    placement: _placement = "top",
-    offset: _offset = 8,
-    openDelay: _openDelay = 500,
-    closeDelay: _closeDelay = 100,
-    hoverableContent: _hoverableContent = true,
-    dismissOnEsc: _dismissOnEsc = true,
-    strategy: _strategy = "auto",
-    disableAnchorPositioning: _disableAnchorPositioning,
+    placement = "top",
+    offset = 8,
+    openDelay = 500,
+    closeDelay = 100,
+    hoverableContent = true,
+    dismissOnEsc = true,
+    strategy = "auto",
+    disableAnchorPositioning,
     id: idProp,
+    open: controlledOpen,
+    defaultOpen,
+    onOpenChange,
+    describeOnlyWhenOpen = true,
   } = options;
 
   const generatedId = useId();
-  const id = idProp ?? (generatedId.replace(/:/g, "") || "rt-tooltip");
-  const [open, setOpenState] = useState(false);
-  const supports = detectSupports();
+  const id = idProp ?? (generatedId.replace(/:/g, "-") || "rt-tooltip");
+  const anchorName = makeAnchorName(id);
 
-  const setOpen = useCallback((next: boolean, _reason?: import("../types").OpenChangeReason) => {
-    setOpenState(next);
-  }, []);
+  const engine = useOverlayEngine({
+    kind: "tooltip",
+    mode: "auto",
+    placement,
+    offset,
+    strategy,
+    disableAnchorPositioning,
+    controlledOpen,
+    defaultOpen: defaultOpen ?? false,
+    onOpenChange,
+    interactionConfig: {
+      openDelayMs: openDelay,
+      closeDelayMs: closeDelay,
+      hoverableContent,
+      dismissOnEsc,
+    },
+    closeOnOutsidePress: false,
+    closeOnEsc: dismissOnEsc,
+  });
+
+  const handlers = engine.getInteractionHandlers();
+  const { open } = engine;
 
   const getTriggerProps = useCallback(
     <T extends object>(
       props?: T
     ): T & {
-      ref: RefCallback<HTMLElement>;
+      ref: React.RefCallback<HTMLElement>;
       "aria-describedby"?: string;
       style?: React.CSSProperties;
       onPointerEnter?: React.PointerEventHandler<HTMLElement>;
@@ -43,41 +67,102 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
       onBlur?: React.FocusEventHandler<HTMLElement>;
       onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
     } => {
-      // TODO: Inject anchorName style; wire pointer/focus/keydown to interactionManager.
+      const base = (props ?? {}) as T & {
+        ref?: React.RefCallback<HTMLElement> | React.RefObject<HTMLElement>;
+        style?: React.CSSProperties;
+        onPointerEnter?: React.PointerEventHandler<HTMLElement>;
+        onPointerLeave?: React.PointerEventHandler<HTMLElement>;
+        onFocus?: React.FocusEventHandler<HTMLElement>;
+        onBlur?: React.FocusEventHandler<HTMLElement>;
+        onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
+      };
+      const withAnchor = withAnchorNameStyle(base, anchorName);
       return {
-        ...(props ?? ({} as T)),
-        ref: () => {},
-        ...(open ? { "aria-describedby": id } : {}),
+        ...withAnchor,
+        ref: composeRefs<HTMLElement>(engine.triggerRef, base.ref),
+        ...(describeOnlyWhenOpen && open ? { "aria-describedby": id } : {}),
+        onPointerEnter: (e) => {
+          base.onPointerEnter?.(e);
+          handlers?.onPointerEnterTrigger();
+        },
+        onPointerLeave: (e) => {
+          base.onPointerLeave?.(e);
+          handlers?.onPointerLeaveTrigger();
+        },
+        onFocus: (e) => {
+          base.onFocus?.(e);
+          handlers?.onFocusTrigger();
+        },
+        onBlur: (e) => {
+          base.onBlur?.(e);
+          handlers?.onBlurTrigger();
+        },
+        onKeyDown: (e) => {
+          base.onKeyDown?.(e);
+          if (e.key === "Escape") handlers?.onKeyDownEscape();
+        },
+      } as T & {
+        ref: React.RefCallback<HTMLElement>;
+        "aria-describedby"?: string;
+        style?: React.CSSProperties;
+        onPointerEnter?: React.PointerEventHandler<HTMLElement>;
+        onPointerLeave?: React.PointerEventHandler<HTMLElement>;
+        onFocus?: React.FocusEventHandler<HTMLElement>;
+        onBlur?: React.FocusEventHandler<HTMLElement>;
+        onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
       };
     },
-    [open, id]
+    [engine, anchorName, id, open, describeOnlyWhenOpen, handlers]
   );
 
   const getTooltipProps = useCallback(
     <T extends object>(
       props?: T
     ): T & {
-      ref: RefCallback<HTMLElement>;
+      ref: React.RefCallback<HTMLElement>;
       role: "tooltip";
       id: string;
       style?: React.CSSProperties;
+      onPointerEnter?: React.PointerEventHandler<HTMLElement>;
+      onPointerLeave?: React.PointerEventHandler<HTMLElement>;
     } => {
-      // TODO: Inject positionAnchor style.
+      const base = (props ?? {}) as T & {
+        ref?: React.RefCallback<HTMLElement> | React.RefObject<HTMLElement>;
+        style?: React.CSSProperties;
+        onPointerEnter?: React.PointerEventHandler<HTMLElement>;
+        onPointerLeave?: React.PointerEventHandler<HTMLElement>;
+      };
+      const withAnchor = withPositionAnchorStyle(base, anchorName);
       return {
-        ...(props ?? ({} as T)),
-        ref: () => {},
+        ...withAnchor,
+        ref: composeRefs<HTMLElement>(engine.overlayRef, base.ref),
         role: "tooltip",
         id,
+        onPointerEnter: (e) => {
+          base.onPointerEnter?.(e);
+          handlers?.onPointerEnterOverlay();
+        },
+        onPointerLeave: (e) => {
+          base.onPointerLeave?.(e);
+          handlers?.onPointerLeaveOverlay();
+        },
+      } as T & {
+        ref: React.RefCallback<HTMLElement>;
+        role: "tooltip";
+        id: string;
+        style?: React.CSSProperties;
+        onPointerEnter?: React.PointerEventHandler<HTMLElement>;
+        onPointerLeave?: React.PointerEventHandler<HTMLElement>;
       };
     },
-    [id]
+    [engine, anchorName, id, handlers]
   );
 
   return {
     open,
-    setOpen,
+    setOpen: engine.setOpen,
     getTriggerProps,
     getTooltipProps,
-    supports,
+    supports: engine.supports,
   };
 }
