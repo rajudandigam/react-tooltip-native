@@ -37,7 +37,7 @@ describe("Tooltip", () => {
     const { container, unmount } = renderTooltip();
     const overlay = container.querySelector("[data-rt-overlay='tooltip']");
     expect(overlay).not.toBeNull();
-    expect((overlay as HTMLElement).style.display).toBe("none");
+    expect((overlay as HTMLElement).hasAttribute("hidden")).toBe(true);
     expect(container.querySelector("button")?.textContent).toBe("Trigger");
     unmount();
   });
@@ -92,7 +92,7 @@ describe("Tooltip", () => {
     });
     const overlay = container.querySelector("[data-rt-overlay='tooltip']");
     expect(overlay).not.toBeNull();
-    expect((overlay as HTMLElement).style.display).not.toBe("none");
+    expect((overlay as HTMLElement).hasAttribute("hidden")).toBe(false);
     expect(overlay?.getAttribute("role")).toBe("tooltip");
     unmount();
   });

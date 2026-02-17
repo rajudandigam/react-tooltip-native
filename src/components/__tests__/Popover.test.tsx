@@ -37,7 +37,7 @@ describe("Popover", () => {
     const { container, unmount } = renderPopover();
     const panel = container.querySelector("[data-rt-overlay='popover']");
     expect(panel).not.toBeNull();
-    expect((panel as HTMLElement).style.display).toBe("none");
+    expect((panel as HTMLElement).hasAttribute("hidden")).toBe(true);
     expect(container.querySelector("button")?.textContent).toBe("Trigger");
     unmount();
   });
@@ -48,7 +48,7 @@ describe("Popover", () => {
     const panel = container.querySelector("[data-rt-overlay='popover']");
     expect(panel).not.toBeNull();
     expect(panel?.textContent).toContain("First focusable");
-    expect((panel as HTMLElement).style.display).not.toBe("none");
+    expect((panel as HTMLElement).hasAttribute("hidden")).toBe(false);
     unmount();
   });
 

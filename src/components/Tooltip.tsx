@@ -10,7 +10,6 @@ import { mergeStyles } from "../hooks/_utils";
 
 const DEFAULT_OVERLAY_STYLE: React.CSSProperties = {
   maxWidth: 320,
-  pointerEvents: "auto",
 };
 
 export function Tooltip({
@@ -64,10 +63,17 @@ export function Tooltip({
       {React.cloneElement(child, triggerProps)}
       <div
         {...tooltipProps}
+        hidden={!open}
+        data-state={open ? "open" : "closed"}
         style={{
           ...tooltipProps.style,
-          display: open ? undefined : "none",
-          visibility: open ? undefined : "hidden",
+          pointerEvents: hoverableContent ? "auto" : "none",
+          ...(open
+            ? {}
+            : {
+                visibility: "hidden",
+                pointerEvents: "none",
+              }),
         }}
         aria-hidden={!open}
       >

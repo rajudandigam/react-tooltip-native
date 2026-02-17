@@ -107,12 +107,17 @@ export function Popover({
       {React.cloneElement(child, triggerProps)}
       <div
         {...popoverProps}
+        hidden={!open}
+        data-state={open ? "open" : "closed"}
         style={{
           ...popoverProps.style,
-          display: open ? undefined : "none",
-          visibility: open ? undefined : "hidden",
+          ...(open
+            ? {}
+            : {
+                visibility: "hidden",
+                pointerEvents: "none",
+              }),
         }}
-        aria-hidden={!open}
       >
         {content}
       </div>
