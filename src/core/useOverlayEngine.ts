@@ -4,7 +4,7 @@
  * No DOM logic except via adapters; no portals; no positioning math.
  */
 
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { OpenChangeReason, Placement } from "../types";
 import { transition, type OverlayState, type StateEvent } from "./stateMachine";
 import { createInteractionManager, type InteractionHandlers } from "./interactionManager";
@@ -65,6 +65,7 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
     placement,
     offset,
     strategy: strategyProp = "auto",
+    disableAnchorPositioning,
     controlledOpen,
     defaultOpen = false,
     onOpenChange,
@@ -88,30 +89,43 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
   const [overlayEl, setOverlayEl] = useState<HTMLElement | null>(null);
   const adapterRef = useRef<AdapterInstance | null>(null);
   const interactionRef = useRef<InteractionHandlers | null>(null);
+  const pendingActionRef = useRef<"open" | "close" | null>(null);
+  const onOpenChangeRef = useRef(onOpenChange);
+  const isControlledRef = useRef(false);
+
+  useEffect(() => {
+    onOpenChangeRef.current = onOpenChange;
+  }, [onOpenChange]);
 
   const isControlled = controlledOpen !== undefined;
+  isControlledRef.current = isControlled;
+
+  const supports = useMemo(() => detectSupports(), []);
+
   const derivedOpen = isControlled ? controlledOpen : state === "open" || state === "opening";
 
   const dispatch = useCallback((event: StateEvent) => {
-    setState((prev) => {
-      const result = transition(prev, event);
-
-      if (result.shouldOpen && adapterRef.current) {
-        adapterRef.current.open();
-      }
-      if (result.shouldClose && adapterRef.current) {
-        adapterRef.current.close();
-      }
-
-      return result.state;
-    });
+    const prev = stateRef.current;
+    const result = transition(prev, event);
+    if (result.shouldOpen) pendingActionRef.current = "open";
+    if (result.shouldClose) pendingActionRef.current = "close";
+    setState(result.state);
   }, []);
+
+  useEffect(() => {
+    const action = pendingActionRef.current;
+    if (action === null) return;
+    pendingActionRef.current = null;
+    if (action === "open") adapterRef.current?.open();
+    if (action === "close") adapterRef.current?.close();
+  }, [state]);
 
   const setOpen = useCallback(
     (next: boolean, reason: OpenChangeReason = "programmatic") => {
-      onOpenChange?.(next, reason);
-
-      if (isControlled) return;
+      if (isControlled) {
+        onOpenChange?.(next, reason);
+        return;
+      }
 
       if (next) {
         lastOpenReasonRef.current = reason;
@@ -126,9 +140,9 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
 
   useEffect(() => {
     if (!isControlled) return;
+    if (!triggerEl || !overlayEl) return;
 
     const openDesired = controlledOpen === true;
-    const currentlyOpen = state === "open" || state === "opening";
 
     if (openDesired && (state === "closed" || state === "closing")) {
       lastOpenReasonRef.current = "programmatic";
@@ -137,7 +151,7 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
       lastCloseReasonRef.current = "programmatic";
       dispatch({ type: "REQUEST_CLOSE", reason: "programmatic" });
     }
-  }, [isControlled, controlledOpen, state, dispatch]);
+  }, [isControlled, controlledOpen, state, triggerEl, overlayEl, dispatch]);
 
   useEffect(() => {
     if (!triggerEl || !overlayEl) {
@@ -148,20 +162,21 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
       return;
     }
 
-    const supports = detectSupports();
-    const resolved = resolveStrategy({ strategy: strategyProp, supports });
+    const effectiveStrategy =
+      disableAnchorPositioning === true ? "fallback" : strategyProp;
+    const resolved = resolveStrategy({ strategy: effectiveStrategy, supports });
 
     const onAfterOpen = () => {
       dispatch({ type: "OPENED" });
-      if (!isControlled) {
-        onOpenChange?.(true, lastOpenReasonRef.current);
+      if (!isControlledRef.current) {
+        onOpenChangeRef.current?.(true, lastOpenReasonRef.current);
       }
     };
 
     const onAfterClose = () => {
       dispatch({ type: "CLOSED" });
-      if (!isControlled) {
-        onOpenChange?.(false, lastCloseReasonRef.current);
+      if (!isControlledRef.current) {
+        onOpenChangeRef.current?.(false, lastCloseReasonRef.current);
       }
     };
 
@@ -211,12 +226,11 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
     mode,
     offset,
     strategyProp,
+    disableAnchorPositioning,
     closeOnOutsidePressProp,
     closeOnEscProp,
     restoreFocusOnClose,
     interactionConfig.dismissOnEsc,
-    isControlled,
-    onOpenChange,
     dispatch,
   ]);
 
@@ -275,6 +289,6 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
     setOpen,
     triggerRef,
     overlayRef,
-    supports: detectSupports(),
+    supports,
   };
 }
