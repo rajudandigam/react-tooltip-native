@@ -1,11 +1,21 @@
 /**
- * Popover component per API_SPECS.md.
- * TODO: Wire to usePopover, native/fallback adapters, anchor injection, ARIA, focus restore.
+ * Popover component: thin wrapper over usePopover. Renders trigger (cloned) and panel when open.
+ * Supports initialFocus and trigger="click-and-focus".
  */
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import type { PopoverProps } from "../types";
 import { usePopover } from "../hooks/usePopover";
+import { composeRefs } from "../hooks/_utils";
+import { mergeStyles } from "../hooks/_utils";
+
+const FOCUSABLE_SELECTOR =
+  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+const DEFAULT_PANEL_STYLE: React.CSSProperties = {
+  maxWidth: 320,
+  pointerEvents: "auto",
+};
 
 export function Popover({
   children,
@@ -14,30 +24,29 @@ export function Popover({
   placement = "bottom",
   offset = 8,
   open: controlledOpen,
-  defaultOpen: _defaultOpen,
-  onOpenChange: _onOpenChange,
-  trigger: _trigger = "click",
-  closeOnEsc: _closeOnEsc = true,
-  closeOnOutsidePress: _closeOnOutsidePress,
+  defaultOpen,
+  onOpenChange,
+  trigger = "click",
+  closeOnEsc = true,
+  closeOnOutsidePress,
   restoreFocusOnClose = true,
-  initialFocus: _initialFocus,
+  initialFocus,
   strategy = "auto",
   disableAnchorPositioning,
-  id: idProp,
+  id,
   ariaLabel,
-  setAriaExpanded: _setAriaExpanded = true,
-  setAriaControls: _setAriaControls = true,
+  setAriaExpanded = true,
+  setAriaControls = true,
   className,
   style,
 }: PopoverProps) {
-  const isControlled = controlledOpen !== undefined;
+  const panelRef = useRef<HTMLElement>(null);
+
   const {
     open,
-    setOpen: _setOpen,
-    toggle: _toggle,
+    setOpen,
     getTriggerProps,
     getPopoverProps,
-    supports: _supports,
   } = usePopover({
     mode,
     placement,
@@ -45,54 +54,68 @@ export function Popover({
     strategy,
     disableAnchorPositioning,
     restoreFocusOnClose,
-    id: idProp,
+    id,
+    open: controlledOpen,
+    defaultOpen,
+    onOpenChange,
+    closeOnEsc,
+    closeOnOutsidePress,
+    setAriaExpanded,
+    setAriaControls,
   });
 
-  const effectiveOpen = isControlled ? controlledOpen : open;
-  // TODO: Call onOpenChange when open state changes; outside-press/Esc.
+  const child = React.Children.only(children) as React.ReactElement & { ref?: React.Ref<HTMLElement> };
+  let triggerProps = getTriggerProps({ ref: child.ref });
 
-  const triggerProps = getTriggerProps();
-  const popoverProps = getPopoverProps();
-  void _defaultOpen;
-  void _onOpenChange;
-  void _trigger;
-  void _closeOnEsc;
-  void _closeOnOutsidePress;
-  void _setAriaExpanded;
-  void _setAriaControls;
-  void _initialFocus;
-  void _setOpen;
-  void _toggle;
+  if (trigger === "click-and-focus") {
+    const existingOnFocus = (triggerProps as { onFocus?: React.FocusEventHandler<HTMLElement> }).onFocus;
+    triggerProps = {
+      ...triggerProps,
+      onFocus: (e: React.FocusEvent<HTMLElement>) => {
+        existingOnFocus?.(e);
+        setOpen(true, "focus");
+      },
+    } as typeof triggerProps;
+  }
 
-  type ChildProps = { ref?: React.Ref<HTMLElement> };
-  const childElement = children as React.ReactElement<ChildProps>;
-  const childRef = (childElement as unknown as { ref?: React.Ref<HTMLElement> }).ref;
+  const basePopoverProps = getPopoverProps({
+    className,
+    style: mergeStyles(DEFAULT_PANEL_STYLE, style ?? {}),
+    ...(ariaLabel ? { "aria-label": ariaLabel } : {}),
+    "data-rt-overlay": "popover",
+  });
+  const popoverProps = {
+    ...basePopoverProps,
+    ref: composeRefs(panelRef, basePopoverProps.ref),
+  };
+
+  useEffect(() => {
+    if (!open || !initialFocus) return;
+
+    if (initialFocus === "first") {
+      const el = panelRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+      el?.focus();
+    } else if (initialFocus === "none") {
+      // no-op
+    } else if ("current" in initialFocus && initialFocus.current) {
+      initialFocus.current.focus();
+    }
+  }, [open, initialFocus]);
 
   return (
     <>
-      {React.cloneElement(childElement, {
-        ...triggerProps,
-        ...childElement.props,
-        ref: (el: HTMLElement | null) => {
-          if (el) {
-            (triggerProps.ref as (el: HTMLElement | null) => void)(el);
-            if (typeof childRef === "function") childRef(el);
-            else if (childRef && typeof childRef === "object") (childRef as React.MutableRefObject<HTMLElement | null>).current = el;
-          }
-        },
-      })}
-      {/* TODO: Render overlay (popover="auto"|"manual" in native path); conditional on effectiveOpen. */}
-      {effectiveOpen && (
-        <div
-          {...popoverProps}
-          className={className}
-          style={style}
-          aria-label={ariaLabel}
-          data-rt-overlay
-        >
-          {content}
-        </div>
-      )}
+      {React.cloneElement(child, triggerProps)}
+      <div
+        {...popoverProps}
+        style={{
+          ...popoverProps.style,
+          display: open ? undefined : "none",
+          visibility: open ? undefined : "hidden",
+        }}
+        aria-hidden={!open}
+      >
+        {content}
+      </div>
     </>
   );
 }

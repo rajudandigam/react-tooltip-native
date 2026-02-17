@@ -1,11 +1,17 @@
 /**
- * Tooltip component per API_SPECS.md.
- * TODO: Wire to useTooltip, native/fallback adapters, anchor injection, ARIA.
+ * Tooltip component: thin wrapper over useTooltip. Renders trigger (cloned) and overlay when open.
+ * ARIA tooltip pattern; WCAG 1.4.13 hoverable content via hook.
  */
 
 import React from "react";
 import type { TooltipProps } from "../types";
 import { useTooltip } from "../hooks/useTooltip";
+import { mergeStyles } from "../hooks/_utils";
+
+const DEFAULT_OVERLAY_STYLE: React.CSSProperties = {
+  maxWidth: 320,
+  pointerEvents: "auto",
+};
 
 export function Tooltip({
   children,
@@ -21,20 +27,13 @@ export function Tooltip({
   dismissOnEsc = true,
   strategy = "auto",
   disableAnchorPositioning,
-  id: idProp,
-  describeOnlyWhenOpen: _describeOnlyWhenOpen = true,
+  id,
+  describeOnlyWhenOpen = true,
   ariaLabel,
   className,
   style,
 }: TooltipProps) {
-  const isControlled = controlledOpen !== undefined;
-  const {
-    open,
-    setOpen: setOpenInternal,
-    getTriggerProps,
-    getTooltipProps,
-    supports: _supports,
-  } = useTooltip({
+  const { open, getTriggerProps, getTooltipProps } = useTooltip({
     placement,
     offset,
     openDelay,
@@ -43,49 +42,37 @@ export function Tooltip({
     dismissOnEsc,
     strategy,
     disableAnchorPositioning,
-    id: idProp,
+    id,
+    open: controlledOpen,
+    defaultOpen,
+    onOpenChange,
+    describeOnlyWhenOpen,
   });
 
-  const effectiveOpen = isControlled ? controlledOpen : open;
-  // TODO: Call onOpenChange when open state changes (setOpen callback or effect).
-  void _describeOnlyWhenOpen;
-  void defaultOpen;
-  void onOpenChange;
-  void setOpenInternal;
+  const child = React.Children.only(children) as React.ReactElement<{ ref?: React.Ref<HTMLElement> }>;
+  const triggerProps = getTriggerProps({ ref: child.ref });
 
-  // TODO: Use getTriggerProps on cloned child; render overlay with getTooltipProps and content.
-  const triggerProps = getTriggerProps();
-  const tooltipProps = getTooltipProps();
-
-  type ChildProps = { ref?: React.Ref<HTMLElement> };
-  const childElement = children as React.ReactElement<ChildProps>;
-  const childRef = (childElement as unknown as { ref?: React.Ref<HTMLElement> }).ref;
+  const tooltipProps = getTooltipProps({
+    className,
+    style: mergeStyles(DEFAULT_OVERLAY_STYLE, style ?? {}),
+    ...(ariaLabel ? { "aria-label": ariaLabel } : {}),
+    "data-rt-overlay": "tooltip",
+  });
 
   return (
     <>
-      {React.cloneElement(childElement, {
-        ...triggerProps,
-        ...childElement.props,
-        ref: (el: HTMLElement | null) => {
-          if (el) {
-            (triggerProps.ref as (el: HTMLElement | null) => void)(el);
-            if (typeof childRef === "function") childRef(el);
-            else if (childRef && typeof childRef === "object") (childRef as React.MutableRefObject<HTMLElement | null>).current = el;
-          }
-        },
-      })}
-      {/* TODO: Render overlay in correct layer (native Top Layer or fallback); conditional on effectiveOpen. */}
-      {effectiveOpen && (
-        <div
-          {...tooltipProps}
-          className={className}
-          style={style}
-          aria-label={ariaLabel}
-          data-rt-overlay
-        >
-          {content}
-        </div>
-      )}
+      {React.cloneElement(child, triggerProps)}
+      <div
+        {...tooltipProps}
+        style={{
+          ...tooltipProps.style,
+          display: open ? undefined : "none",
+          visibility: open ? undefined : "hidden",
+        }}
+        aria-hidden={!open}
+      >
+        {content}
+      </div>
     </>
   );
 }
