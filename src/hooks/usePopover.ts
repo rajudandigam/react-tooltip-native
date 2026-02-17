@@ -18,6 +18,8 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
     strategy = "auto",
     disableAnchorPositioning,
     restoreFocusOnClose = true,
+    setAriaExpanded = true,
+    setAriaControls = true,
     id: idProp,
     open: controlledOpen,
     defaultOpen,
@@ -85,8 +87,8 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
       return {
         ...withAnchor,
         ref: composeRefs<HTMLElement>(engine.triggerRef, base.ref),
-        "aria-expanded": open,
-        "aria-controls": id,
+        ...(setAriaExpanded ? { "aria-expanded": open } : {}),
+        ...(setAriaControls ? { "aria-controls": id } : {}),
         onClick: (e) => {
           base.onClick?.(e);
           handlers?.onClickTrigger();

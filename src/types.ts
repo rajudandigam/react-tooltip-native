@@ -151,6 +151,8 @@ export interface UsePopoverOptions {
   onOpenChange?: (open: boolean, reason: OpenChangeReason) => void;
   closeOnEsc?: boolean;
   closeOnOutsidePress?: boolean;
+  setAriaExpanded?: boolean;
+  setAriaControls?: boolean;
 }
 
 export interface UsePopoverReturn {

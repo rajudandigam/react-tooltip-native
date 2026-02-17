@@ -81,7 +81,9 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
   const idRaw = useId();
   const id = idRaw.replace(/:/g, "-");
 
-  const [state, setState] = useState<OverlayState>("closed");
+  const [state, setState] = useState<OverlayState>(() =>
+    defaultOpen ? "opening" : "closed"
+  );
   const stateRef = useRef<OverlayState>(state);
   stateRef.current = state;
 

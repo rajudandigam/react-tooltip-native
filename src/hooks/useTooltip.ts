@@ -80,7 +80,11 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
       return {
         ...withAnchor,
         ref: composeRefs<HTMLElement>(engine.triggerRef, base.ref),
-        ...(describeOnlyWhenOpen && open ? { "aria-describedby": id } : {}),
+        ...(describeOnlyWhenOpen
+        ? open
+          ? { "aria-describedby": id }
+          : {}
+        : { "aria-describedby": id }),
         onPointerEnter: (e) => {
           base.onPointerEnter?.(e);
           handlers?.onPointerEnterTrigger();
