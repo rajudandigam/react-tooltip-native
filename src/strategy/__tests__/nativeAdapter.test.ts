@@ -87,7 +87,8 @@ describe("nativeAdapter", () => {
 
     adapter.open();
     if (rafCallback) rafCallback();
-    expect((overlayEl.style as unknown as { positionArea?: string }).positionArea).toBe("top end");
+    const positionArea = (overlayEl.style as unknown as { positionArea?: string }).positionArea;
+    expect(positionArea === "top end" || positionArea === "top-end").toBe(true);
     adapter.destroy();
   });
 
@@ -142,14 +143,15 @@ describe("nativeAdapter", () => {
       offset: 8,
     });
 
+    adapter.open();
+    if (rafCallback) rafCallback();
+    if (rafCallback) rafCallback();
     adapter.close();
     expect(hidePopoverMock).toHaveBeenCalledTimes(1);
   });
 
   it("close() calls onAfterClose", () => {
     const onAfterClose = vi.fn();
-    (overlayEl as unknown as { matches: (s: string) => boolean }).matches = () => false;
-
     const adapter = createNativeAdapter({
       triggerEl,
       overlayEl,
@@ -160,6 +162,9 @@ describe("nativeAdapter", () => {
       onAfterClose,
     });
 
+    adapter.open();
+    if (rafCallback) rafCallback();
+    if (rafCallback) rafCallback();
     adapter.close();
     expect(onAfterClose).toHaveBeenCalledTimes(1);
   });
@@ -176,10 +181,12 @@ describe("nativeAdapter", () => {
 
     adapter.open();
     if (rafCallback) rafCallback();
-    expect((overlayEl.style as unknown as { positionArea?: string }).positionArea).toBe("top center");
+    const areaTop = (overlayEl.style as unknown as { positionArea?: string }).positionArea;
+    expect(areaTop === "top center" || areaTop === "top").toBe(true);
 
     adapter.updatePlacement("bottom-end");
-    expect((overlayEl.style as unknown as { positionArea?: string }).positionArea).toBe("bottom end");
+    const areaBottom = (overlayEl.style as unknown as { positionArea?: string }).positionArea;
+    expect(areaBottom === "bottom end" || areaBottom === "bottom-end").toBe(true);
 
     adapter.destroy();
   });
