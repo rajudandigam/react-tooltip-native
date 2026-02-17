@@ -91,8 +91,11 @@ export function computeFallbackPosition(input: {
     }
   }
 
-  const maxLeft = viewportWidth - o.width;
-  const maxTop = viewportHeight - o.height;
+  const maxLeft = Math.max(0, viewportWidth - o.width);
+  const maxTop = Math.max(0, viewportHeight - o.height);
+
+  if (!Number.isFinite(top)) top = 0;
+  if (!Number.isFinite(left)) left = 0;
 
   return {
     left: Math.max(0, Math.min(left, maxLeft)),
