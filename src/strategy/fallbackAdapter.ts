@@ -12,7 +12,6 @@ export type FallbackAdapterOptions = {
   overlayEl: HTMLElement;
   id: string;
 
-  mode: "auto" | "manual";
   placement: Placement;
   offset: number;
 
@@ -56,6 +55,8 @@ export function createFallbackAdapter(options: FallbackAdapterOptions): Fallback
   let savedActiveElement: HTMLElement | null = null;
 
   function reposition(): void {
+    // Prevent late callbacks after destroy; close() tears down observers so no reposition after close.
+    if (destroyed) return;
     if (typeof window === "undefined" || typeof document === "undefined") return;
 
     const triggerRect = triggerEl.getBoundingClientRect();
@@ -112,7 +113,8 @@ export function createFallbackAdapter(options: FallbackAdapterOptions): Fallback
     // Outside press (capture)
     if (closeOnOutsidePress) {
       const onPointerDown = (e: PointerEvent): void => {
-        const target = e.target as Node;
+        const target = e.target;
+        if (!(target instanceof Node)) return;
         if (triggerEl.contains(target) || overlayEl.contains(target)) return;
         onRequestClose?.("outside-press");
       };
@@ -133,8 +135,14 @@ export function createFallbackAdapter(options: FallbackAdapterOptions): Fallback
   }
 
   function runTeardowns(): void {
-    for (const fn of teardowns) fn();
-    teardowns.length = 0;
+    const fns = teardowns.splice(0);
+    for (const fn of fns) {
+      try {
+        fn();
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   function open(): void {
@@ -160,6 +168,7 @@ export function createFallbackAdapter(options: FallbackAdapterOptions): Fallback
   function close(_reason?: "programmatic" | "escape" | "outside-press"): void {
     if (!isOpen) return;
 
+    overlayEl.style.visibility = "hidden";
     runTeardowns();
 
     if (restoreFocusOnClose && savedActiveElement != null) {
@@ -184,25 +193,18 @@ export function createFallbackAdapter(options: FallbackAdapterOptions): Fallback
     if (destroyed) return;
 
     destroyed = true;
-    runTeardowns();
 
     if (isOpen) {
-      isOpen = false;
-      if (restoreFocusOnClose && savedActiveElement != null) {
-        try {
-          savedActiveElement.focus();
-        } catch {
-          // ignore
-        }
-        savedActiveElement = null;
-      }
-      onAfterClose?.();
+      close("programmatic");
+    } else {
+      runTeardowns();
     }
 
     overlayEl.style.position = "";
     overlayEl.style.top = "";
     overlayEl.style.left = "";
     overlayEl.style.zIndex = "";
+    overlayEl.style.visibility = "";
   }
 
   return {
