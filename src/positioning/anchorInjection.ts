@@ -1,20 +1,60 @@
 /**
- * Automatic anchor injection: trigger gets anchorName, overlay gets positionAnchor.
- * TODO: Integrate with native adapter flicker sequence.
+ * Automatic anchor injection: anchorName (trigger) and positionAnchor (overlay).
+ * Pure helpers for headless DX; no manual anchor wiring. SSR-safe, no side effects.
  */
 
-const ANCHOR_PREFIX = "--rt-";
+import type { CSSProperties } from "react";
+
+export const ANCHOR_PREFIX = "--rt-";
+
+const FALLBACK_ANCHOR_ID = "anchor";
 
 /**
- * Returns style object for trigger (anchorName). Value is dashed-ident for CSS.
+ * Returns a valid dashed-ident for CSS anchor-name / position-anchor.
+ * Sanitizes: ":" (React useId) -> removed, spaces -> "-". Empty after sanitize -> "--rt-anchor".
  */
-export function getTriggerAnchorStyle(id: string): { anchorName: string } {
-  return { anchorName: `${ANCHOR_PREFIX}${id}` };
+export function makeAnchorName(id: string): string {
+  const sanitized = id
+    .replace(/:/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+  if (sanitized.length === 0 || /^-*$/.test(sanitized))
+    return `${ANCHOR_PREFIX}${FALLBACK_ANCHOR_ID}`;
+  return `${ANCHOR_PREFIX}${sanitized}`;
 }
 
 /**
- * Returns style object for overlay (positionAnchor).
+ * Merges anchorName into props.style. Does not mutate input or props.style.
  */
+export function withAnchorNameStyle<T extends { style?: CSSProperties }>(
+  props: T,
+  anchorName: string
+): T {
+  const existing = props.style && typeof props.style === "object" && !Array.isArray(props.style)
+    ? props.style
+    : {};
+  return { ...props, style: { ...existing, anchorName } };
+}
+
+/**
+ * Merges positionAnchor into props.style. Does not mutate input or props.style.
+ */
+export function withPositionAnchorStyle<T extends { style?: CSSProperties }>(
+  props: T,
+  positionAnchor: string
+): T {
+  const existing = props.style && typeof props.style === "object" && !Array.isArray(props.style)
+    ? props.style
+    : {};
+  return { ...props, style: { ...existing, positionAnchor } };
+}
+
+/** @deprecated Use makeAnchorName + withAnchorNameStyle. Returns style object for trigger. */
+export function getTriggerAnchorStyle(id: string): { anchorName: string } {
+  return { anchorName: makeAnchorName(id) };
+}
+
+/** @deprecated Use makeAnchorName + withPositionAnchorStyle. Returns style object for overlay. */
 export function getOverlayAnchorStyle(id: string): { positionAnchor: string } {
-  return { positionAnchor: `${ANCHOR_PREFIX}${id}` };
+  return { positionAnchor: makeAnchorName(id) };
 }
