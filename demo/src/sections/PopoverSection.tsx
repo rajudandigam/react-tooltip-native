@@ -39,6 +39,35 @@ function PopoverWithDemoProps({
   );
 }
 
+/** Manual popover with a Close button that actually closes (controlled + onOpenChange). */
+function ManualPopoverWithClose() {
+  const [open, setOpen] = useState(false);
+  const { forceFallback, addLog } = useDemo();
+  return (
+    <Popover
+      exampleName="popover-manual"
+      content={
+        <div>
+          <p style={{ margin: "0 0 0.5rem" }}>Manual: I stay open. Close with button or ESC.</p>
+          <button type="button" onClick={() => setOpen(false)}>
+            Close
+          </button>
+        </div>
+      }
+      mode="manual"
+      open={open}
+      onOpenChange={(next, reason) => {
+        setOpen(next);
+        addLog("popover-manual", next, reason);
+      }}
+      strategy={forceFallback ? "fallback" : undefined}
+      disableAnchorPositioning={forceFallback}
+    >
+      <button type="button">manual</button>
+    </Popover>
+  );
+}
+
 export function PopoverSection() {
   const { log, clearLog, forceFallback } = useDemo();
   const [controlledOpen, setControlledOpen] = useState(false);
@@ -80,7 +109,9 @@ export function PopoverSection() {
           title="B) mode=auto vs mode=manual"
           description="Left: auto (closes on outside press). Right: manual (persists; close via button or ESC)."
           code={`<Popover mode="auto" content={...} />
-<Popover mode="manual" content={...} />`}
+<Popover mode="manual" open={open} onOpenChange={setOpen} content={
+  <><p>Manual: ...</p><button onClick={() => setOpen(false)}>Close</button></>
+} />`}
         >
           <div className="flex gap-1">
             <PopoverWithDemoProps
@@ -95,20 +126,7 @@ export function PopoverSection() {
             >
               <button type="button">auto</button>
             </PopoverWithDemoProps>
-            <PopoverWithDemoProps
-              exampleName="popover-manual"
-              content={
-                <div>
-                  <p style={{ margin: "0 0 0.5rem" }}>Manual: I stay open. Close with button or ESC.</p>
-                  <button type="button" onClick={() => {}}>
-                    Close
-                  </button>
-                </div>
-              }
-              mode="manual"
-            >
-              <button type="button">manual</button>
-            </PopoverWithDemoProps>
+            <ManualPopoverWithClose />
           </div>
         </ExampleCard>
 

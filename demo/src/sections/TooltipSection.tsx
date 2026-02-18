@@ -61,7 +61,7 @@ export function TooltipSection() {
           title="A) Basic tooltip (default)"
           description="Placement top; hover + focus opens; aria-describedby only when open."
           code={`<Tooltip content="Copy to clipboard">
-  <button type="button">📋</button>
+  <button type="button">Hover or focus me</button>
 </Tooltip>`}
         >
           <TooltipWithDemoProps content="Copy to clipboard" exampleName="tooltip-basic">
@@ -72,7 +72,7 @@ export function TooltipSection() {
         <ExampleCard
           name="tooltip-placements"
           title="B) Placements grid (all 12)"
-          description="Each button shows tooltip with placement name."
+          description="Each button shows tooltip with placement name. If start/end placements look off, try Force fallback (toolbar) to compare native vs fallback positioning."
           code={`<Tooltip content="top" placement="top">
   <button>top</button>
 </Tooltip>`}
