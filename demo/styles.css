@@ -87,18 +87,16 @@ body {
   cursor: pointer;
 }
 
-.demo-header__clear {
-  padding: 0.35rem 0.75rem;
-  font-size: 0.875rem;
-  cursor: pointer;
-  background: #eee;
-  color: #1a1a1a;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.demo-header__eventlog {
+  margin-top: 1rem;
+  max-height: 160px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.demo-header__clear:hover {
-  background: #e0e0e0;
+.demo-header__eventlog .event-log {
+  margin-top: 0;
 }
 
 /* Debug badges */
@@ -234,7 +232,7 @@ body {
 .placements-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.5rem;
+  gap: 0.75rem 1rem;
 }
 
 @media (max-width: 480px) {

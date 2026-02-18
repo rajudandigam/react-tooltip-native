@@ -3,7 +3,6 @@ import { Tooltip, useTooltip } from "@lib/react";
 import { useDemo } from "../context/DemoContext";
 import { Section } from "../components/Section";
 import { ExampleCard } from "../components/ExampleCard";
-import { EventLog } from "../components/EventLog";
 
 const PLACEMENTS = [
   "top",
@@ -50,7 +49,7 @@ function TooltipWithDemoProps({
 }
 
 export function TooltipSection() {
-  const { log, clearLog, forceFallback } = useDemo();
+  const { forceFallback } = useDemo();
   const [controlledOpen, setControlledOpen] = useState(false);
 
   return (
@@ -220,7 +219,6 @@ export function TooltipSection() {
         </ExampleCard>
       </div>
 
-      <EventLog entries={log} onClear={clearLog} data-testid="tooltip-event-log" />
     </Section>
   );
 }

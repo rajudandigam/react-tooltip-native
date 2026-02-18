@@ -3,6 +3,7 @@ import { useTooltip } from "@lib/react";
 import { DemoProvider, useDemo } from "./context/DemoContext";
 import { SidebarNav } from "./components/SidebarNav";
 import { DebugBadge } from "./components/DebugBadge";
+import { EventLog } from "./components/EventLog";
 import { TooltipSection } from "./sections/TooltipSection";
 import { PopoverSection } from "./sections/PopoverSection";
 import { FixturesSection } from "./sections/FixturesSection";
@@ -25,7 +26,7 @@ function useViewportSize() {
 
 function DemoHeader() {
   const { supports } = useTooltip({});
-  const { forceFallback, setForceFallback, reducedMotion, setReducedMotion, clearLog } = useDemo();
+  const { forceFallback, setForceFallback, reducedMotion, setReducedMotion, log, clearLog } = useDemo();
   const { width, height } = useViewportSize();
 
   return (
@@ -60,10 +61,10 @@ function DemoHeader() {
             />
             Reduced motion
           </label>
-          <button type="button" onClick={clearLog} className="demo-header__clear">
-            Clear event log
-          </button>
         </div>
+      </div>
+      <div className="demo-header__eventlog" data-testid="global-event-log">
+        <EventLog entries={log} onClear={clearLog} />
       </div>
     </header>
   );

@@ -3,7 +3,6 @@ import { Popover } from "@lib/react";
 import { useDemo } from "../context/DemoContext";
 import { Section } from "../components/Section";
 import { ExampleCard } from "../components/ExampleCard";
-import { EventLog } from "../components/EventLog";
 
 function PopoverWithDemoProps({
   children,
@@ -45,7 +44,6 @@ function ManualPopoverWithClose() {
   const { forceFallback, addLog } = useDemo();
   return (
     <Popover
-      exampleName="popover-manual"
       content={
         <div>
           <p style={{ margin: "0 0 0.5rem" }}>Manual: I stay open. Close with button or ESC.</p>
@@ -69,7 +67,7 @@ function ManualPopoverWithClose() {
 }
 
 export function PopoverSection() {
-  const { log, clearLog, forceFallback } = useDemo();
+  const { forceFallback } = useDemo();
   const [controlledOpen, setControlledOpen] = useState(false);
   const focusTargetRef = useRef<HTMLButtonElement>(null);
 
@@ -133,14 +131,18 @@ export function PopoverSection() {
         <ExampleCard
           name="popover-outsidepress"
           title="C) closeOnOutsidePress variations"
-          description="auto + closeOnOutsidePress=false vs manual + closeOnOutsidePress=true."
-          code={`<Popover mode="auto" closeOnOutsidePress={false} />
-<Popover mode="manual" closeOnOutsidePress={true} />`}
+          description="Left: auto + closeOnOutsidePress=false — in fallback, click outside keeps it open (in native, auto always closes on outside). Right: manual + closeOnOutsidePress=true — click outside closes. Use Force fallback to see left example stay open on outside click."
+          code={`<Popover mode="auto" closeOnOutsidePress={false} content={...} />
+<Popover mode="manual" closeOnOutsidePress={true} content={...} />`}
         >
           <div className="flex gap-1">
             <PopoverWithDemoProps
               exampleName="popover-auto-no-outside"
-              content={<p style={{ margin: 0 }}>Auto but won't close on outside click</p>}
+              content={
+                <p style={{ margin: 0 }}>
+                  Auto + closeOnOutsidePress=false. Click outside — I stay open.
+                </p>
+              }
               mode="auto"
               closeOnOutsidePress={false}
             >
@@ -148,7 +150,11 @@ export function PopoverSection() {
             </PopoverWithDemoProps>
             <PopoverWithDemoProps
               exampleName="popover-manual-outside"
-              content={<p style={{ margin: 0 }}>Manual but closes on outside (parity demo)</p>}
+              content={
+                <p style={{ margin: 0 }}>
+                  Manual + closeOnOutsidePress=true. Click outside — I close.
+                </p>
+              }
               mode="manual"
               closeOnOutsidePress={true}
             >
@@ -317,7 +323,6 @@ export function PopoverSection() {
         </ExampleCard>
       </div>
 
-      <EventLog entries={log} onClear={clearLog} data-testid="popover-event-log" />
     </Section>
   );
 }
