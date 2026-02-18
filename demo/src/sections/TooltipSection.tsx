@@ -71,14 +71,20 @@ export function TooltipSection() {
         <ExampleCard
           name="tooltip-placements"
           title="B) Placements grid (all 12)"
-          description="Each button shows tooltip with placement name. If start/end placements look off, try Force fallback (toolbar) to compare native vs fallback positioning."
+          description="Each button shows tooltip with placement name. Uses fallback strategy here so start/end placements align correctly to their triggers (native anchor positioning can misalign in dense grids)."
           code={`<Tooltip content="top" placement="top">
   <button>top</button>
 </Tooltip>`}
         >
           <div className="placements-grid" data-rt-fixture="placements">
             {PLACEMENTS.map((p) => (
-              <TooltipWithDemoProps key={p} content={p} placement={p} exampleName={`tooltip-${p}`}>
+              <TooltipWithDemoProps
+                key={p}
+                content={p}
+                placement={p}
+                exampleName={`tooltip-${p}`}
+                strategy="fallback"
+              >
                 <button type="button">{p}</button>
               </TooltipWithDemoProps>
             ))}
