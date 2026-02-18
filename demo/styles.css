@@ -10,6 +10,11 @@ body {
   padding: 0;
 }
 
+/* Override library fallback z-index (inline 1) so overlays appear above sticky header */
+[data-rt-overlay] {
+  z-index: 9999 !important;
+}
+
 /* Layout */
 .demo-layout {
   display: flex;
@@ -33,11 +38,11 @@ body {
   max-width: 56rem;
 }
 
-/* Header */
+/* Header: use z-index 1 so library overlays (fallback z-index 1) can appear above when they're later in DOM */
 .demo-header {
   position: sticky;
   top: 0;
-  z-index: 5;
+  z-index: 1;
   background: #fff;
   border-bottom: 1px solid #e5e5e5;
   padding: 1rem 0;
