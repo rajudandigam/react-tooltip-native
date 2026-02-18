@@ -1,20 +1,29 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { Tooltip } from "../Tooltip";
 
 function renderTooltip(props: Partial<React.ComponentProps<typeof Tooltip>> = {}) {
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
+  const defaultProps = {
+    content: "Tooltip text",
+    strategy: "fallback" as const,
+    disableAnchorPositioning: true,
+    ...props,
+  };
   act(() => {
     root.render(
-      <Tooltip
-        content="Tooltip text"
-        strategy="fallback"
-        disableAnchorPositioning
-        {...props}
-      >
+      <Tooltip {...defaultProps}>
+        <button type="button">Trigger</button>
+      </Tooltip>
+    );
+  });
+  act(() => {
+    root.render(
+      <Tooltip {...defaultProps}>
         <button type="button">Trigger</button>
       </Tooltip>
     );
@@ -33,11 +42,10 @@ describe("Tooltip", () => {
     document.body.innerHTML = "";
   });
 
-  it("when closed overlay is hidden (not removed, for ref/engine)", () => {
+  it("when closed overlay is unmounted", () => {
     const { container, unmount } = renderTooltip();
     const overlay = container.querySelector("[data-rt-overlay='tooltip']");
-    expect(overlay).not.toBeNull();
-    expect((overlay as HTMLElement).hasAttribute("hidden")).toBe(true);
+    expect(overlay).toBeNull();
     expect(container.querySelector("button")?.textContent).toBe("Trigger");
     unmount();
   });
@@ -49,11 +57,12 @@ describe("Tooltip", () => {
     expect(button).not.toBeNull();
 
     act(() => {
-      button!.dispatchEvent(new Event("pointerenter", { bubbles: true }));
+      fireEvent.pointerEnter(button!);
     });
     act(() => {
       vi.advanceTimersByTime(0);
     });
+    act(() => {});
 
     const overlay = container.querySelector("[data-rt-overlay='tooltip']");
     expect(overlay).not.toBeNull();
@@ -92,7 +101,6 @@ describe("Tooltip", () => {
     });
     const overlay = container.querySelector("[data-rt-overlay='tooltip']");
     expect(overlay).not.toBeNull();
-    expect((overlay as HTMLElement).hasAttribute("hidden")).toBe(false);
     expect(overlay?.getAttribute("role")).toBe("tooltip");
     unmount();
   });

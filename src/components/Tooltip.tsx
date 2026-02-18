@@ -51,9 +51,14 @@ export function Tooltip({
   const child = React.Children.only(children) as React.ReactElement & { ref?: React.Ref<HTMLElement> };
   const triggerProps = getTriggerProps({ ref: child.ref });
 
+  const overlayStyle = mergeStyles(DEFAULT_OVERLAY_STYLE, {
+    ...(style ?? {}),
+    pointerEvents: hoverableContent === false ? "none" : "auto",
+  });
+
   const tooltipProps = getTooltipProps({
     className,
-    style: mergeStyles(DEFAULT_OVERLAY_STYLE, style ?? {}),
+    style: overlayStyle,
     ...(ariaLabel ? { "aria-label": ariaLabel } : {}),
     "data-rt-overlay": "tooltip",
   });
@@ -61,24 +66,17 @@ export function Tooltip({
   return (
     <>
       {React.cloneElement(child, triggerProps)}
-      <div
-        {...tooltipProps}
-        hidden={!open}
-        data-state={open ? "open" : "closed"}
-        style={{
-          ...tooltipProps.style,
-          pointerEvents: hoverableContent ? "auto" : "none",
-          ...(open
-            ? {}
-            : {
-                visibility: "hidden",
-                pointerEvents: "none",
-              }),
-        }}
-        aria-hidden={!open}
-      >
-        {content}
-      </div>
+      {open && (
+        <div
+          {...tooltipProps}
+          style={{
+            ...tooltipProps.style,
+          }}
+          aria-hidden={false}
+        >
+          {content}
+        </div>
+      )}
     </>
   );
 }

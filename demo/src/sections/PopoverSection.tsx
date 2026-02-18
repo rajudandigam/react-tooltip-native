@@ -67,7 +67,7 @@ function ManualPopoverWithClose() {
 }
 
 export function PopoverSection() {
-  const { forceFallback } = useDemo();
+  const { forceFallback, addLog } = useDemo();
   const [controlledOpen, setControlledOpen] = useState(false);
   const focusTargetRef = useRef<HTMLButtonElement>(null);
 
@@ -269,7 +269,10 @@ export function PopoverSection() {
               exampleName="popover-controlled"
               content={<p style={{ margin: 0 }}>Controlled</p>}
               open={controlledOpen}
-              onOpenChange={(open) => setControlledOpen(open)}
+              onOpenChange={(open, reason) => {
+                setControlledOpen(open);
+                addLog("popover-controlled", open, reason);
+              }}
             >
               <button type="button">Trigger</button>
             </PopoverWithDemoProps>

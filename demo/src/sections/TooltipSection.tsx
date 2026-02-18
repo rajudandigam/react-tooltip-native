@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Tooltip, useTooltip } from "@lib/react";
+import { Tooltip } from "@lib/react";
 import { useDemo } from "../context/DemoContext";
 import { Section } from "../components/Section";
 import { ExampleCard } from "../components/ExampleCard";
@@ -34,14 +34,19 @@ function TooltipWithDemoProps({
   disableAnchorPositioning?: boolean;
   [key: string]: unknown;
 }) {
-  const { forceFallback, addLog } = useDemo();
+  const { forceFallback, reducedMotion, addLog } = useDemo();
+  const finalProps = {
+    ...rest,
+    openDelay: reducedMotion ? 0 : (rest.openDelay as number | undefined),
+    closeDelay: reducedMotion ? 0 : (rest.closeDelay as number | undefined),
+  };
   return (
     <Tooltip
       content={content}
       onOpenChange={(open, reason) => addLog(exampleName, open, reason)}
       strategy={forceFallback ? "fallback" : strategyProp}
       disableAnchorPositioning={forceFallback || disableAnchorProp}
-      {...rest}
+      {...finalProps}
     >
       {children}
     </Tooltip>
@@ -49,7 +54,7 @@ function TooltipWithDemoProps({
 }
 
 export function TooltipSection() {
-  const { forceFallback } = useDemo();
+  const { forceFallback, addLog } = useDemo();
   const [controlledOpen, setControlledOpen] = useState(false);
 
   return (
@@ -95,8 +100,12 @@ export function TooltipSection() {
           name="tooltip-delays"
           title="C) Delays"
           description="Left: openDelay=800, closeDelay=300. Right: openDelay=0, closeDelay=0."
-          code={`<Tooltip openDelay={800} closeDelay={300} content="Slow" />
-<Tooltip openDelay={0} closeDelay={0} content="Instant" />`}
+          code={`<Tooltip openDelay={800} closeDelay={300} content="Slow">
+  <button>Slow</button>
+</Tooltip>
+<Tooltip openDelay={0} closeDelay={0} content="Instant">
+  <button>Instant</button>
+</Tooltip>`}
         >
           <div className="flex gap-1">
             <TooltipWithDemoProps
@@ -122,8 +131,12 @@ export function TooltipSection() {
           name="tooltip-hoverable"
           title="D) hoverableContent true vs false"
           description="Left: hoverableContent=true (cursor can enter tooltip). Right: false (tooltip closes when leaving trigger)."
-          code={`<Tooltip hoverableContent={true} content="Stay open when hovering me" />
-<Tooltip hoverableContent={false} content="Closes when you leave trigger" />`}
+          code={`<Tooltip hoverableContent={true} content="Stay open when hovering me">
+  <button>hoverableContent=true</button>
+</Tooltip>
+<Tooltip hoverableContent={false} content="Closes when you leave trigger">
+  <button>hoverableContent=false</button>
+</Tooltip>`}
         >
           <div className="flex gap-1">
             <TooltipWithDemoProps
@@ -158,7 +171,10 @@ export function TooltipSection() {
               content="I am controlled"
               exampleName="tooltip-controlled"
               open={controlledOpen}
-              onOpenChange={(open) => setControlledOpen(open)}
+              onOpenChange={(open, reason) => {
+                setControlledOpen(open);
+                addLog("tooltip-controlled", open, reason);
+              }}
             >
               <button type="button">Trigger</button>
             </TooltipWithDemoProps>
@@ -184,10 +200,10 @@ export function TooltipSection() {
           name="tooltip-strategies"
           title="F) Strategy toggles"
           description="auto / native / fallback + disableAnchorPositioning. Force Fallback (toolbar) overrides to fallback."
-          code={`<Tooltip strategy="auto" content="Auto" />
-<Tooltip strategy="native" content="Native" />
-<Tooltip strategy="fallback" content="Fallback" />
-<Tooltip disableAnchorPositioning content="No anchor" />`}
+          code={`<Tooltip strategy="auto" content="Auto"><button>auto</button></Tooltip>
+<Tooltip strategy="native" content="Native"><button>native</button></Tooltip>
+<Tooltip strategy="fallback" content="Fallback"><button>fallback</button></Tooltip>
+<Tooltip disableAnchorPositioning content="No anchor"><button>no anchor</button></Tooltip>`}
         >
           <div className="flex gap-1 flex-wrap">
             <TooltipWithDemoProps

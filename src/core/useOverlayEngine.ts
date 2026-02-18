@@ -220,6 +220,10 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
       });
     }
 
+    if (stateRef.current === "opening") {
+      adapterRef.current?.open();
+    }
+
     return () => {
       adapterRef.current?.destroy();
       adapterRef.current = null;

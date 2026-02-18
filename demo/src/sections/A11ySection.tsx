@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Tooltip, Popover } from "@lib/react";
 import { useDemo } from "../context/DemoContext";
 import { Section } from "../components/Section";
@@ -6,6 +6,8 @@ import { ExampleCard } from "../components/ExampleCard";
 
 export function A11ySection() {
   const { forceFallback } = useDemo();
+  const tooltipTriggerRef = useRef<HTMLButtonElement>(null);
+  const popoverTriggerRef = useRef<HTMLButtonElement>(null);
   const [tooltipStatus, setTooltipStatus] = useState<string>("—");
   const [popoverStatus, setPopoverStatus] = useState<string>("—");
   const [ariaInspector, setAriaInspector] = useState<{ describedby?: string; expanded?: string; controls?: string }>({});
@@ -37,12 +39,20 @@ export function A11ySection() {
               content="I open on focus and close on blur or ESC"
               onOpenChange={(open) => {
                 tooltipOpenChange(open);
-                setAriaInspector((prev) => ({ ...prev, describedby: open ? "tooltip-id" : undefined }));
+                queueMicrotask(() => {
+                  const el = tooltipTriggerRef.current;
+                  setAriaInspector((prev) => ({
+                    ...prev,
+                    describedby: el?.getAttribute("aria-describedby") ?? undefined,
+                  }));
+                });
               }}
               strategy={forceFallback ? "fallback" : "auto"}
               disableAnchorPositioning={forceFallback}
             >
-              <button type="button">Tooltip trigger</button>
+              <button ref={tooltipTriggerRef} type="button">
+                Tooltip trigger
+              </button>
             </Tooltip>
             <p className="a11y-status" role="status" aria-live="polite">
               Status: {tooltipStatus}
@@ -69,18 +79,23 @@ export function A11ySection() {
               }
               onOpenChange={(open) => {
                 popoverOpenChange(open);
-                setAriaInspector((prev) => ({
-                  ...prev,
-                  expanded: open ? "true" : undefined,
-                  controls: open ? "popover-id" : undefined,
-                }));
+                queueMicrotask(() => {
+                  const el = popoverTriggerRef.current;
+                  setAriaInspector((prev) => ({
+                    ...prev,
+                    expanded: el?.getAttribute("aria-expanded") ?? undefined,
+                    controls: el?.getAttribute("aria-controls") ?? undefined,
+                  }));
+                });
               }}
               restoreFocusOnClose={true}
               initialFocus="first"
               strategy={forceFallback ? "fallback" : "auto"}
               disableAnchorPositioning={forceFallback}
             >
-              <button type="button">Popover trigger</button>
+              <button ref={popoverTriggerRef} type="button">
+                Popover trigger
+              </button>
             </Popover>
             <p className="a11y-status" role="status" aria-live="polite">
               Status: {popoverStatus}
@@ -125,7 +140,7 @@ export function A11ySection() {
             </code>
           </pre>
           <p className="a11y-instruction">
-            Open a tooltip or popover above to see values update. (Demo uses placeholder IDs for display.)
+            Open a tooltip or popover above to see values update (reads real DOM attributes from triggers).
           </p>
         </div>
       </div>
