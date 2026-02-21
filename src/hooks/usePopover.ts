@@ -4,7 +4,7 @@
  */
 
 import type React from "react";
-import { useCallback, useId } from "react";
+import { useCallback, useId, useMemo, useRef } from "react";
 import type { UsePopoverOptions, UsePopoverReturn } from "../types";
 import { useOverlayEngine } from "../core/useOverlayEngine";
 import { makeAnchorName, withAnchorNameStyle, withPositionAnchorStyle } from "../positioning/anchorInjection";
@@ -59,6 +59,23 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
   const handlers = engine.getInteractionHandlers();
   const { open } = engine;
 
+  const userTriggerRefRef = useRef<React.Ref<HTMLElement> | undefined>(undefined);
+  const stableTriggerRef = useMemo(
+    (): React.RefCallback<HTMLElement> =>
+      (node) => {
+        engine.triggerRef(node);
+        const userRef = userTriggerRefRef.current;
+        if (userRef != null) {
+          if (typeof userRef === "function") {
+            (userRef as React.RefCallback<HTMLElement>)(node);
+          } else {
+            (userRef as React.MutableRefObject<HTMLElement | null>).current = node;
+          }
+        }
+      },
+    [engine.triggerRef]
+  );
+
   const toggle = useCallback(
     (reason?: import("../types").OpenChangeReason) => {
       engine.setOpen(!open, reason ?? "click");
@@ -83,10 +100,11 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
         onClick?: React.MouseEventHandler<HTMLElement>;
         onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
       };
+      userTriggerRefRef.current = base.ref;
       const withAnchor = withAnchorNameStyle(base, anchorName);
       return {
         ...withAnchor,
-        ref: composeRefs<HTMLElement>(engine.triggerRef, base.ref),
+        ref: stableTriggerRef,
         ...(setAriaExpanded ? { "aria-expanded": open } : {}),
         ...(setAriaControls ? { "aria-controls": id } : {}),
         onClick: (e) => {

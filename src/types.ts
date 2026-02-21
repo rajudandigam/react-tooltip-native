@@ -35,8 +35,10 @@ export type OpenChangeReason =
 import type React from "react";
 
 export interface TooltipProps {
-  /** The trigger element */
+  /** The trigger element. In React 19, do not put ref on the child; use triggerRef instead. */
   children: React.ReactElement;
+  /** Optional ref to receive the trigger DOM node (composed with internal ref). Use this instead of ref on the child to avoid React 19 warnings. */
+  triggerRef?: React.Ref<HTMLElement>;
   /** Tooltip content */
   content: React.ReactNode;
   /** Placement relative to trigger */
@@ -66,7 +68,10 @@ export interface TooltipProps {
 }
 
 export interface PopoverProps {
+  /** The trigger element. In React 19, do not put ref on the child; use triggerRef instead. */
   children: React.ReactElement;
+  /** Optional ref to receive the trigger DOM node (composed with internal ref). Use this instead of ref on the child to avoid React 19 warnings. */
+  triggerRef?: React.Ref<HTMLElement>;
   content: React.ReactNode;
   mode?: OverlayMode;
   placement?: Placement;

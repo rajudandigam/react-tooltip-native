@@ -1,6 +1,7 @@
 /**
  * Tooltip component: thin wrapper over useTooltip. Renders trigger (cloned) and overlay when open.
  * ARIA tooltip pattern; WCAG 1.4.13 hoverable content via hook.
+ * React 19: do not access element.ref or child.props.ref (can trigger warning). Use engine ref only.
  */
 
 import React from "react";
@@ -14,6 +15,7 @@ const DEFAULT_OVERLAY_STYLE: React.CSSProperties = {
 
 export function Tooltip({
   children,
+  triggerRef,
   content,
   placement = "top",
   offset = 8,
@@ -48,8 +50,13 @@ export function Tooltip({
     describeOnlyWhenOpen,
   });
 
-  const child = React.Children.only(children) as React.ReactElement & { ref?: React.Ref<HTMLElement> };
-  const triggerProps = getTriggerProps({ ref: child.ref });
+  const child = React.Children.only(children) as React.ReactElement<Record<string, unknown>>;
+  const triggerProps = getTriggerProps({ ref: triggerRef });
+  const mergedTriggerProps: Record<string, unknown> = { ...triggerProps };
+  for (const key of Object.keys(child.props)) {
+    if (key !== "ref") mergedTriggerProps[key] = (child.props as Record<string, unknown>)[key];
+  }
+  mergedTriggerProps.ref = triggerProps.ref;
 
   const overlayStyle = mergeStyles(DEFAULT_OVERLAY_STYLE, {
     ...(style ?? {}),
@@ -65,7 +72,7 @@ export function Tooltip({
 
   return (
     <>
-      {React.cloneElement(child, triggerProps)}
+      {React.createElement(child.type as React.ElementType, mergedTriggerProps)}
       {open && (
         <div
           {...tooltipProps}

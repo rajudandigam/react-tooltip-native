@@ -36,6 +36,7 @@ export function A11ySection() {
               Tab to the button → tooltip opens. Press ESC or Shift+Tab away to close.
             </p>
             <Tooltip
+              triggerRef={tooltipTriggerRef}
               content="I open on focus and close on blur or ESC"
               onOpenChange={(open) => {
                 tooltipOpenChange(open);
@@ -50,7 +51,7 @@ export function A11ySection() {
               strategy={forceFallback ? "fallback" : "auto"}
               disableAnchorPositioning={forceFallback}
             >
-              <button ref={tooltipTriggerRef} type="button">
+              <button type="button">
                 Tooltip trigger
               </button>
             </Tooltip>
@@ -71,6 +72,7 @@ export function A11ySection() {
               restoreFocusOnClose=true.
             </p>
             <Popover
+              triggerRef={popoverTriggerRef}
               content={
                 <div>
                   <input type="text" placeholder="Tab here" aria-label="Input" />
@@ -93,7 +95,7 @@ export function A11ySection() {
               strategy={forceFallback ? "fallback" : "auto"}
               disableAnchorPositioning={forceFallback}
             >
-              <button ref={popoverTriggerRef} type="button">
+              <button type="button">
                 Popover trigger
               </button>
             </Popover>

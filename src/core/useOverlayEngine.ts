@@ -4,7 +4,7 @@
  * No DOM logic except via adapters; no portals; no positioning math.
  */
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useId, useMemo, useRef, useState } from "react";
 import type { OpenChangeReason, Placement } from "../types";
 import { transition, type OverlayState, type StateEvent } from "./stateMachine";
 import { createInteractionManager, type InteractionHandlers } from "./interactionManager";
@@ -95,9 +95,12 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
   const [, setHandlersVersion] = useState(0);
   const adapterRef = useRef<AdapterInstance | null>(null);
   const interactionRef = useRef<InteractionHandlers | null>(null);
+  const interactionConfigRef = useRef(interactionConfig);
   const pendingActionRef = useRef<"open" | "close" | null>(null);
   const onOpenChangeRef = useRef(onOpenChange);
   const isControlledRef = useRef(false);
+
+  interactionConfigRef.current = interactionConfig;
 
   useEffect(() => {
     onOpenChangeRef.current = onOpenChange;
@@ -244,17 +247,16 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
     dispatch,
   ]);
 
-  useEffect(() => {
-    if (!triggerEl) return;
-
-    const hadHandlers = interactionRef.current !== null;
-    interactionRef.current = createInteractionManager({
+  const createManagerRef = useRef<() => InteractionHandlers>(null!);
+  createManagerRef.current = () => {
+    const config = interactionConfigRef.current;
+    return createInteractionManager({
       config: {
         kind,
-        openDelayMs: interactionConfig.openDelayMs,
-        closeDelayMs: interactionConfig.closeDelayMs,
-        hoverableContent: interactionConfig.hoverableContent,
-        dismissOnEsc: interactionConfig.dismissOnEsc,
+        openDelayMs: config.openDelayMs,
+        closeDelayMs: config.closeDelayMs,
+        hoverableContent: config.hoverableContent,
+        dismissOnEsc: config.dismissOnEsc,
       },
       onRequest: (req) => {
         if (req.type === "OPEN_REQUEST") {
@@ -275,16 +277,26 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
         }
       },
     });
+  };
 
-    if (!hadHandlers) {
-      queueMicrotask(() => setHandlersVersion((v) => v + 1));
-    }
-
+  useLayoutEffect(() => {
+    if (!triggerEl) return;
+    interactionRef.current?.destroy();
+    interactionRef.current = createManagerRef.current();
+    setHandlersVersion((v) => v + 1);
     return () => {
       interactionRef.current?.destroy();
       interactionRef.current = null;
     };
-  }, [triggerEl, kind, interactionConfig, dispatch]);
+  }, [
+    triggerEl,
+    kind,
+    interactionConfig.openDelayMs,
+    interactionConfig.closeDelayMs,
+    interactionConfig.hoverableContent,
+    interactionConfig.dismissOnEsc,
+    dispatch,
+  ]);
 
   useEffect(() => {
     const adapter = adapterRef.current;
@@ -293,6 +305,10 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
 
   const triggerRef = useCallback((node: HTMLElement | null) => {
     setTriggerEl(node);
+    if (!node) {
+      interactionRef.current?.destroy();
+      interactionRef.current = null;
+    }
   }, []);
 
   const overlayRef = useCallback((node: HTMLElement | null) => {

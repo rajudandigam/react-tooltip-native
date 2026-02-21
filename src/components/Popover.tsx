@@ -1,13 +1,13 @@
 /**
  * Popover component: thin wrapper over usePopover. Renders trigger (cloned) and panel when open.
  * Supports initialFocus and trigger="click-and-focus".
+ * React 19: do not access element.ref or child.props.ref (can trigger warning). Use engine ref only.
  */
 
 import React, { useEffect, useRef } from "react";
 import type { PopoverProps } from "../types";
 import { usePopover } from "../hooks/usePopover";
-import { composeRefs } from "../hooks/_utils";
-import { mergeStyles } from "../hooks/_utils";
+import { composeRefs, mergeStyles } from "../hooks/_utils";
 
 const FOCUSABLE_SELECTOR =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -19,6 +19,7 @@ const DEFAULT_PANEL_STYLE: React.CSSProperties = {
 
 export function Popover({
   children,
+  triggerRef,
   content,
   mode = "auto",
   placement = "bottom",
@@ -64,8 +65,8 @@ export function Popover({
     setAriaControls,
   });
 
-  const child = React.Children.only(children) as React.ReactElement & { ref?: React.Ref<HTMLElement> };
-  let triggerProps = getTriggerProps({ ref: child.ref });
+  const child = React.Children.only(children) as React.ReactElement<Record<string, unknown>>;
+  let triggerProps = getTriggerProps({ ref: triggerRef });
 
   if (trigger === "click-and-focus") {
     const existingOnFocus = (triggerProps as { onFocus?: React.FocusEventHandler<HTMLElement> }).onFocus;
@@ -77,6 +78,11 @@ export function Popover({
       },
     } as typeof triggerProps;
   }
+  const mergedTriggerProps: Record<string, unknown> = { ...triggerProps };
+  for (const key of Object.keys(child.props)) {
+    if (key !== "ref") mergedTriggerProps[key] = (child.props as Record<string, unknown>)[key];
+  }
+  mergedTriggerProps.ref = triggerProps.ref;
 
   const basePopoverProps = getPopoverProps({
     className,
@@ -104,7 +110,7 @@ export function Popover({
 
   return (
     <>
-      {React.cloneElement(child, triggerProps)}
+      {React.createElement(child.type as React.ElementType, mergedTriggerProps)}
       <div
         {...popoverProps}
         hidden={!open}

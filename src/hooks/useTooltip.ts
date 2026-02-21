@@ -4,7 +4,7 @@
  */
 
 import type React from "react";
-import { useCallback, useId } from "react";
+import { useCallback, useId, useMemo, useRef } from "react";
 import type { UseTooltipOptions, UseTooltipReturn } from "../types";
 import { useOverlayEngine } from "../core/useOverlayEngine";
 import { makeAnchorName, withAnchorNameStyle, withPositionAnchorStyle } from "../positioning/anchorInjection";
@@ -54,6 +54,23 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
   const handlers = engine.getInteractionHandlers();
   const { open } = engine;
 
+  const userTriggerRefRef = useRef<React.Ref<HTMLElement> | undefined>(undefined);
+  const stableTriggerRef = useMemo(
+    (): React.RefCallback<HTMLElement> =>
+      (node) => {
+        engine.triggerRef(node);
+        const userRef = userTriggerRefRef.current;
+        if (userRef != null) {
+          if (typeof userRef === "function") {
+            (userRef as React.RefCallback<HTMLElement>)(node);
+          } else {
+            (userRef as React.MutableRefObject<HTMLElement | null>).current = node;
+          }
+        }
+      },
+    [engine.triggerRef]
+  );
+
   const getTriggerProps = useCallback(
     <T extends object>(
       props?: T
@@ -76,10 +93,11 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
         onBlur?: React.FocusEventHandler<HTMLElement>;
         onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
       };
+      userTriggerRefRef.current = base.ref;
       const withAnchor = withAnchorNameStyle(base, anchorName);
       return {
         ...withAnchor,
-        ref: composeRefs<HTMLElement>(engine.triggerRef, base.ref),
+        ref: stableTriggerRef,
         ...(describeOnlyWhenOpen
         ? open
           ? { "aria-describedby": id }
