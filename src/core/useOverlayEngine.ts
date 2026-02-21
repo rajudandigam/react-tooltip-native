@@ -92,6 +92,7 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
 
   const [triggerEl, setTriggerEl] = useState<HTMLElement | null>(null);
   const [overlayEl, setOverlayEl] = useState<HTMLElement | null>(null);
+  const [, setHandlersVersion] = useState(0);
   const adapterRef = useRef<AdapterInstance | null>(null);
   const interactionRef = useRef<InteractionHandlers | null>(null);
   const pendingActionRef = useRef<"open" | "close" | null>(null);
@@ -246,6 +247,7 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
   useEffect(() => {
     if (!triggerEl) return;
 
+    const hadHandlers = interactionRef.current !== null;
     interactionRef.current = createInteractionManager({
       config: {
         kind,
@@ -273,6 +275,10 @@ export function useOverlayEngine(options: UseOverlayEngineOptions): UseOverlayEn
         }
       },
     });
+
+    if (!hadHandlers) {
+      queueMicrotask(() => setHandlersVersion((v) => v + 1));
+    }
 
     return () => {
       interactionRef.current?.destroy();

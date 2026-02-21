@@ -26,47 +26,69 @@ function useViewportSize() {
 
 function DemoHeader() {
   const { supports } = useTooltip({});
-  const { forceFallback, setForceFallback, reducedMotion, setReducedMotion, log, clearLog } = useDemo();
+  const { forceFallback, setForceFallback, reducedMotion, setReducedMotion } = useDemo();
   const { width, height } = useViewportSize();
 
   return (
     <header className="demo-header" role="banner">
-      <div className="demo-header__row">
-        <h1 className="demo-header__title">react-tooltip-native showcase</h1>
+      <h1 className="demo-header__title">react-tooltip-native showcase</h1>
+      <div className="demo-header__badges">
+        <DebugBadge label="popover" value={supports.popover} />
+        <DebugBadge label="anchor" value={supports.anchorPositioning} />
+        <span className="demo-header__viewport" aria-label="Viewport size">
+          {width}×{height}
+        </span>
       </div>
-      <div className="demo-header__toolbar">
-        <div className="demo-header__badges">
-          <DebugBadge label="supports.popover" value={supports.popover} />
-          <DebugBadge label="supports.anchorPositioning" value={supports.anchorPositioning} />
-          <span className="demo-header__viewport" aria-label="Viewport size">
-            viewport: {width}×{height}
-          </span>
-        </div>
-        <div className="demo-header__controls">
-          <label className="demo-header__toggle">
-            <input
-              type="checkbox"
-              checked={forceFallback}
-              onChange={(e) => setForceFallback(e.target.checked)}
-              aria-label="Force fallback strategy for all examples"
-            />
-            Force fallback
-          </label>
-          <label className="demo-header__toggle">
-            <input
-              type="checkbox"
-              checked={reducedMotion}
-              onChange={(e) => setReducedMotion(e.target.checked)}
-              aria-label="Reduced motion (demo UI)"
-            />
-            Reduced motion
-          </label>
-        </div>
-      </div>
-      <div className="demo-header__eventlog" data-testid="global-event-log">
-        <EventLog entries={log} onClear={clearLog} />
+      <div className="demo-header__controls">
+        <label className="demo-header__toggle">
+          <input
+            type="checkbox"
+            checked={forceFallback}
+            onChange={(e) => setForceFallback(e.target.checked)}
+            aria-label="Force fallback strategy for all examples"
+          />
+          Force fallback
+        </label>
+        <label className="demo-header__toggle">
+          <input
+            type="checkbox"
+            checked={reducedMotion}
+            onChange={(e) => setReducedMotion(e.target.checked)}
+            aria-label="Reduced motion (demo UI)"
+          />
+          Reduced motion
+        </label>
       </div>
     </header>
+  );
+}
+
+function EventLogSidebar() {
+  const { log, clearLog } = useDemo();
+  const [collapsed, setCollapsed] = useState(false);
+
+  return (
+    <aside
+      className={`demo-eventlog-sidebar ${collapsed ? "demo-eventlog-sidebar--collapsed" : ""}`}
+      data-testid="global-event-log"
+      aria-label="Event log"
+    >
+      <button
+        type="button"
+        className="demo-eventlog-sidebar__toggle"
+        onClick={() => setCollapsed((c) => !c)}
+        aria-expanded={!collapsed}
+        aria-label={collapsed ? "Show event log" : "Hide event log"}
+        title={collapsed ? "Show event log" : "Hide event log"}
+      >
+        {collapsed ? "▶ Log" : "Log ◀"}
+      </button>
+      {!collapsed && (
+        <div className="demo-eventlog-sidebar__content">
+          <EventLog entries={log} onClear={clearLog} />
+        </div>
+      )}
+    </aside>
   );
 }
 
@@ -92,6 +114,7 @@ export function App() {
           <DemoHeader />
           <Showcase />
         </div>
+        <EventLogSidebar />
       </div>
     </DemoProvider>
   );
