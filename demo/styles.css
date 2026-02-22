@@ -58,6 +58,25 @@ body {
   cursor: pointer;
 }
 
+/* Tooltip overlay bubble (positioned by library; we only style appearance) */
+[data-rt-overlay="tooltip"] {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+
+/* Align tooltip spacing: same small gap above trigger for both hover-only and controlled */
+[data-rt-overlay="tooltip"].tooltip-overlay-hover-only,
+[data-rt-overlay="tooltip"].tooltip-overlay-controlled {
+  transform: translateY(8px);
+}
+
 .tooltip-example {
   padding: 1rem;
 }
@@ -79,4 +98,65 @@ body {
 .tooltip-example button:focus-visible {
   outline: 2px solid #1a1a1a;
   outline-offset: 2px;
+}
+
+.tooltip-section {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  min-width: 280px;
+}
+
+.demo-section-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.demo-section-desc {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.8125rem;
+  color: #666;
+}
+
+/* Controlled section: controls on top, then trigger in its own row so tooltip (above trigger) does not overlap */
+.controlled-actions {
+  margin-bottom: 1rem;
+}
+
+.controlled-actions label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  margin-right: 1rem;
+}
+
+.controlled-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.controlled-buttons button {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+}
+
+.controlled-buttons button:hover {
+  background: #333;
+}
+
+/* Trigger row: only the anchor button so tooltip has clear space above it */
+.tooltip-example-controlled {
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eee;
 }
