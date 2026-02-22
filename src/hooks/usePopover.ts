@@ -56,7 +56,6 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
     restoreFocusOnClose,
   });
 
-  const handlers = engine.getInteractionHandlers();
   const { open } = engine;
 
   const toggle = useCallback(
@@ -91,14 +90,14 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
         ...(setAriaControls ? { "aria-controls": id } : {}),
         onClick: (e) => {
           base.onClick?.(e);
-          handlers?.onClickTrigger();
+          engine.getInteractionHandlers()?.onClickTrigger();
         },
         onKeyDown: (e) => {
           base.onKeyDown?.(e);
-          if (e.key === "Escape") handlers?.onKeyDownEscape();
+          if (e.key === "Escape") engine.getInteractionHandlers()?.onKeyDownEscape();
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            handlers?.onClickTrigger();
+            engine.getInteractionHandlers()?.onClickTrigger();
           }
         },
       } as T & {
@@ -110,7 +109,7 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
         onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
       };
     },
-    [engine, anchorName, id, open, handlers]
+    [engine, anchorName, id, open]
   );
 
   const getPopoverProps = useCallback(

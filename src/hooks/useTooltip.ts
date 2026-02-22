@@ -51,7 +51,6 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
     closeOnEsc: dismissOnEsc,
   });
 
-  const handlers = engine.getInteractionHandlers();
   const { open } = engine;
 
   const getTriggerProps = useCallback(
@@ -87,23 +86,23 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
         : { "aria-describedby": id }),
         onPointerEnter: (e) => {
           base.onPointerEnter?.(e);
-          handlers?.onPointerEnterTrigger();
+          engine.getInteractionHandlers()?.onPointerEnterTrigger();
         },
         onPointerLeave: (e) => {
           base.onPointerLeave?.(e);
-          handlers?.onPointerLeaveTrigger();
+          engine.getInteractionHandlers()?.onPointerLeaveTrigger();
         },
         onFocus: (e) => {
           base.onFocus?.(e);
-          handlers?.onFocusTrigger();
+          engine.getInteractionHandlers()?.onFocusTrigger();
         },
         onBlur: (e) => {
           base.onBlur?.(e);
-          handlers?.onBlurTrigger();
+          engine.getInteractionHandlers()?.onBlurTrigger();
         },
         onKeyDown: (e) => {
           base.onKeyDown?.(e);
-          if (e.key === "Escape") handlers?.onKeyDownEscape();
+          if (e.key === "Escape") engine.getInteractionHandlers()?.onKeyDownEscape();
         },
       } as T & {
         ref: React.RefCallback<HTMLElement>;
@@ -116,7 +115,7 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
         onKeyDown?: React.KeyboardEventHandler<HTMLElement>;
       };
     },
-    [engine, anchorName, id, open, describeOnlyWhenOpen, handlers]
+    [engine, anchorName, id, open, describeOnlyWhenOpen]
   );
 
   const getTooltipProps = useCallback(
@@ -144,11 +143,11 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
         id,
         onPointerEnter: (e) => {
           base.onPointerEnter?.(e);
-          handlers?.onPointerEnterOverlay();
+          engine.getInteractionHandlers()?.onPointerEnterOverlay();
         },
         onPointerLeave: (e) => {
           base.onPointerLeave?.(e);
-          handlers?.onPointerLeaveOverlay();
+          engine.getInteractionHandlers()?.onPointerLeaveOverlay();
         },
       } as T & {
         ref: React.RefCallback<HTMLElement>;
@@ -159,7 +158,7 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
         onPointerLeave?: React.PointerEventHandler<HTMLElement>;
       };
     },
-    [engine, anchorName, id, handlers]
+    [engine, anchorName, id]
   );
 
   return {

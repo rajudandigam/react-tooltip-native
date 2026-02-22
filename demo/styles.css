@@ -21,9 +21,48 @@ body {
 }
 
 .demo-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
   font-size: 1.25rem;
   font-weight: 600;
+}
+
+.demo-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.demo-nav-btn {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.demo-nav-btn:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.demo-nav-btn.is-active {
+  background: #1a1a1a;
+  color: #fff;
+  border-color: #1a1a1a;
+}
+
+.demo-supports {
+  margin: 0 0 1rem 0;
+  font-size: 0.8125rem;
+  color: #666;
+}
+
+.demo-view {
+  width: 100%;
+  max-width: 400px;
 }
 
 .debug-panel {
@@ -56,6 +95,12 @@ body {
   gap: 0.5rem;
   margin-top: 0.75rem;
   cursor: pointer;
+}
+
+.debug-panel.compact {
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.75rem;
+  min-width: auto;
 }
 
 /* Tooltip overlay bubble (positioned by library; we only style appearance) */
@@ -159,4 +204,16 @@ body {
   margin-top: 0.5rem;
   padding-top: 0.75rem;
   border-top: 1px solid #eee;
+}
+
+/* Hoverable content section: two tooltips side by side */
+.tooltip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.tooltip-row .tooltip-example {
+  flex: 0 0 auto;
 }
