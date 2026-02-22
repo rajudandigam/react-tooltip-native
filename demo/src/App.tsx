@@ -4,7 +4,7 @@ import { Tooltip, useTooltip } from "@lib/react";
 export function App() {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<string>("—");
-  const [forceFallback, setForceFallback] = useState(false);
+  const [forceFallback, setForceFallback] = useState(true);
 
   const { supports } = useTooltip({});
 
@@ -42,6 +42,8 @@ export function App() {
             setOpen(nextOpen);
             setReason(r ?? "—");
           }}
+          openDelay={150}
+          closeDelay={50}
           strategy={forceFallback ? "fallback" : "auto"}
           disableAnchorPositioning={forceFallback}
         >
